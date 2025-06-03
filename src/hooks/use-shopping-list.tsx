@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ShoppingItemData } from '@/components/shopping/ShoppingItem';
 import { mockShoppingItems } from '@/lib/data';
 import { supabase, getIdAsString } from '@/integrations/supabase/client';
+import { sortItemsByGroceryLogic } from '@/lib/grocery-store-logic';
 
 export function useShoppingList() {
   const { toast } = useToast();
@@ -20,7 +21,7 @@ export function useShoppingList() {
         const { newList } = location.state;
         
         if (newList.items && newList.items.length > 0) {
-          // Set the new shopping list items from the passed state
+          // Set the new shopping list items from the passed state (already sorted by grocery logic)
           setShoppingItems(prev => {
             // Merge with existing items, avoid duplicates by name
             const existingNames = new Set(prev.map(item => item.name));
@@ -42,12 +43,13 @@ export function useShoppingList() {
               }
             });
             
-            return [...prev, ...newItems];
+            // Return sorted items by grocery store logic
+            return sortItemsByGroceryLogic([...prev, ...newItems]);
           });
           
           toast({
             title: `List "${newList.name}" loaded`,
-            description: `Added ${newList.items.length} items from Grab & Go mode`,
+            description: `Added ${newList.items.length} items organized by store layout`,
             duration: 3000,
           });
         }
@@ -76,15 +78,18 @@ export function useShoppingList() {
             quantity: item.quantity || 1,
             unit: item.unit || 'pc',
             category: item.category || 'General',
-            isChecked: item.ischecked || false, // Map from ischecked (DB) to isChecked (code)
+            isChecked: item.ischecked || false,
             note: item.note
           }));
           
-          setShoppingItems(mappedData);
+          // Sort by grocery store logic
+          const sortedItems = sortItemsByGroceryLogic(mappedData);
+          setShoppingItems(sortedItems);
         } else {
           console.log('No shopping items found in DB, using mock data fallback');
-          // Use mock data as fallback
-          setShoppingItems(mockShoppingItems);
+          // Use mock data as fallback and sort by grocery logic
+          const sortedMockItems = sortItemsByGroceryLogic(mockShoppingItems);
+          setShoppingItems(sortedMockItems);
         }
       } catch (error) {
         console.error('Error fetching shopping items:', error);
@@ -93,7 +98,8 @@ export function useShoppingList() {
           description: 'Using demo data instead',
           variant: 'destructive',
         });
-        setShoppingItems(mockShoppingItems);
+        const sortedMockItems = sortItemsByGroceryLogic(mockShoppingItems);
+        setShoppingItems(sortedMockItems);
       } finally {
         setIsLoading(false);
       }
@@ -195,8 +201,8 @@ export function useShoppingList() {
         note: newItemData.note
       };
       
-      // Optimistic UI update - add to the list immediately
-      setShoppingItems(items => [newItem, ...items]);
+      // Optimistic UI update - add to the list immediately and sort by grocery logic
+      setShoppingItems(items => sortItemsByGroceryLogic([newItem, ...items]));
       
       // Add to database
       const { data, error } = await supabase
@@ -226,10 +232,12 @@ export function useShoppingList() {
           note: data.note
         };
         
-        // Replace temp item with DB item
+        // Replace temp item with DB item and maintain grocery store sorting
         setShoppingItems(items => 
-          items.map(item => 
-            item.id === newItem.id ? dbItem : item
+          sortItemsByGroceryLogic(
+            items.map(item => 
+              item.id === newItem.id ? dbItem : item
+            )
           )
         );
       }
@@ -297,7 +305,7 @@ export function useShoppingList() {
           isChecked: item.ischecked || false, // Map from ischecked (DB) to isChecked (UI)
           note: item.note
         }));
-        setShoppingItems(mappedData);
+        setShoppingItems(sortItemsByGroceryLogic(mappedData));
       }
     }
   };

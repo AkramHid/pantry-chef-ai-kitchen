@@ -1,13 +1,16 @@
 
-import React, { useEffect, useState } from 'react';
-import { Clock, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { supabase, getIdAsString } from '@/integrations/supabase/client';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Plus } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-// Define the ExpiringSoonItem interface to match expected types
 interface ExpiringSoonItem {
-  id: string; // Define id as string to match what's expected
+  id: string;
   name: string;
   daysLeft: number;
   image?: string;
@@ -17,126 +20,125 @@ interface ExpiringSoonSectionProps {
   items: ExpiringSoonItem[];
 }
 
-const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items: propItems }) => {
-  const [items, setItems] = useState<ExpiringSoonItem[]>(propItems);
-  const [isLoading, setIsLoading] = useState(true);
+const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchExpiringSoonItems = async () => {
-      try {
-        const today = new Date();
-        const oneWeekLater = new Date();
-        oneWeekLater.setDate(today.getDate() + 7);
-        
-        const { data, error } = await supabase
-          .from('pantry_items')
-          .select('id, name, expiry_date, image_url')
-          .lt('expiry_date', oneWeekLater.toISOString())
-          .gt('expiry_date', today.toISOString())
-          .order('expiry_date', { ascending: true });
-          
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          console.log('Expiring soon items from DB:', data);
-          const expiringSoonItems: ExpiringSoonItem[] = data.map(item => {
-            const expiryDate = new Date(item.expiry_date || '');
-            const diffTime = expiryDate.getTime() - today.getTime();
-            const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            return {
-              id: getIdAsString(item.id),
-              name: item.name || '',
-              daysLeft: daysLeft,
-              image: item.image_url
-            };
-          });
-          
-          setItems(expiringSoonItems);
-        } else {
-          console.log('No expiring items found in DB, using props fallback');
-          // Use the props items as fallback
-          setItems(propItems);
-        }
-      } catch (error) {
-        console.error('Error fetching expiring soon items:', error);
-        toast({
-          title: 'Error loading expiring items',
-          description: 'Could not connect to database. Using demo data instead.',
-          variant: 'destructive',
+  const handleAddToGrabAndGo = async (item: ExpiringSoonItem) => {
+    try {
+      // Add item to shopping list (Grab & Go uses unchecked shopping list items)
+      const { error } = await supabase
+        .from('shopping_list')
+        .insert({
+          name: item.name,
+          quantity: 1,
+          unit: 'pc',
+          category: 'General',
+          ischecked: false,
+          note: `Expiring in ${item.daysLeft} day${item.daysLeft !== 1 ? 's' : ''}`
         });
-        // Use props items on error
-        setItems(propItems);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchExpiringSoonItems();
-  }, [propItems, toast]);
 
-  if (isLoading) {
-    return (
-      <div className="mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-kitchen-dark flex items-center">
-            <Clock size={20} className="mr-2 text-kitchen-berry" />
-            Use Soon!
-          </h2>
-        </div>
-        <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-none">
-          {[1, 2, 3].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-32 h-20 bg-gray-200 animate-pulse rounded-lg"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+      if (error) throw error;
 
-  if (!items.length) {
+      toast({
+        title: "Added to Grab & Go",
+        description: `${item.name} has been added to your Grab & Go list`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Error adding item to Grab & Go:', error);
+      toast({
+        title: 'Failed to add item',
+        description: 'Please try again',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getDaysLeftColor = (daysLeft: number) => {
+    if (daysLeft <= 1) return 'bg-red-500';
+    if (daysLeft <= 3) return 'bg-orange-500';
+    return 'bg-yellow-500';
+  };
+
+  const getDaysLeftText = (daysLeft: number) => {
+    if (daysLeft <= 0) return 'Expired';
+    if (daysLeft === 1) return '1 day';
+    return `${daysLeft} days`;
+  };
+
+  if (items.length === 0) {
     return null;
   }
 
   return (
-    <div className="mt-6">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-kitchen-dark flex items-center">
-          <Clock size={20} className="mr-2 text-kitchen-berry" />
-          Use Soon!
-        </h2>
-        <Link to="/pantry?filter=expiring" className="text-sm text-kitchen-green flex items-center">
-          See All <ArrowRight size={16} className="ml-1" />
-        </Link>
-      </div>
-
-      <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-none">
-        {items.map((item) => (
-          <div 
-            key={item.id} 
-            className="flex-shrink-0 w-32 rounded-lg overflow-hidden shadow-sm bg-white border border-muted"
-          >
-            <div className="h-20 bg-gray-200 flex items-center justify-center">
-              {item.image ? (
-                <img src={item.image} alt={item.name} className="object-cover w-full h-full" />
-              ) : (
-                <span className="text-3xl">🍽️</span>
-              )}
-            </div>
-            <div className="p-2">
-              <h3 className="font-medium text-sm truncate">{item.name}</h3>
-              <p className={`text-xs ${item.daysLeft <= 1 ? 'text-kitchen-berry' : 'text-amber-600'}`}>
-                {item.daysLeft === 0 
-                  ? 'Expires today!' 
-                  : item.daysLeft === 1 
-                    ? '1 day left' 
-                    : `${item.daysLeft} days left`}
-              </p>
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="bg-white/90 shadow-lg backdrop-blur-sm border-orange-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center text-lg font-semibold text-kitchen-dark">
+            <Calendar className="mr-2 h-5 w-5 text-orange-500" />
+            Expiring Soon
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {items.slice(0, 3).map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center space-x-3">
+                  {item.image && (
+                    <img 
+                      src={item.image} 
+                      alt={item.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">{item.name}</p>
+                    <Badge 
+                      variant="secondary" 
+                      className={`${getDaysLeftColor(item.daysLeft)} text-white text-xs`}
+                    >
+                      {getDaysLeftText(item.daysLeft)}
+                    </Badge>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAddToGrabAndGo(item)}
+                  className="border-kitchen-green text-kitchen-green hover:bg-kitchen-green hover:text-white"
+                >
+                  <Plus size={14} className="mr-1" />
+                  Add to Grab & Go
+                </Button>
+              </motion.div>
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
+          
+          {items.length > 3 && (
+            <div className="mt-4 text-center">
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/pantry')}
+                className="text-kitchen-green hover:bg-kitchen-green/10"
+              >
+                View all {items.length} expiring items
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 

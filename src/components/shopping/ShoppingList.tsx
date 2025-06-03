@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import ShoppingItem, { ShoppingItemData } from './ShoppingItem';
 import { Button } from '@/components/ui/button';
-import { Plus, Share2, Trash2, Import } from 'lucide-react';
+import { Plus, Share2, Trash2 } from 'lucide-react';
 import { ListLayout, ViewMode } from '@/components/ui/list-layout';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { groupItemsByGroceryCategory, GROCERY_STORE_CATEGORIES } from '@/lib/grocery-store-logic';
 import { 
   Dialog, 
   DialogContent, 
@@ -75,17 +76,13 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
     setIsAddDialogOpen(false);
   };
   
-  // Group items by category
-  const groupedItems = items.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {} as Record<string, ShoppingItemData[]>);
+  // Group items by grocery store categories
+  const groupedItems = groupItemsByGroceryCategory(items);
   
-  // Sort categories for display
-  const sortedCategories = Object.keys(groupedItems).sort();
+  // Only show categories that have items
+  const categoriesWithItems = GROCERY_STORE_CATEGORIES.filter(
+    category => groupedItems[category].length > 0
+  );
   
   // Separate checked and unchecked items
   const hasCheckedItems = items.some(item => item.isChecked);
@@ -235,7 +232,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
       </div>
       
       <ListLayout
-        title="Shopping List"
+        title="Shopping List (Organized by Store Layout)"
         viewMode={viewMode}
         onViewModeChange={!isMobile ? setViewMode : undefined}
         className="bg-gradient-to-br from-kitchen-cream to-white"
@@ -253,14 +250,17 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
           </div>
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4' : ''}>
-            {sortedCategories.map(category => {
+            {categoriesWithItems.map(category => {
               const categoryItems = groupedItems[category].filter(item => !item.isChecked);
               if (categoryItems.length === 0) return null;
               
               return (
                 <div key={category} className="mb-2">
-                  <div className="px-3 md:px-4 py-2 bg-muted/50 font-medium text-sm text-gray-600 uppercase">
-                    {category}
+                  <div className="px-3 md:px-4 py-2 bg-muted/50 font-medium text-sm text-gray-600 uppercase flex justify-between items-center">
+                    <span>{category}</span>
+                    <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                      {categoryItems.length} item{categoryItems.length !== 1 ? 's' : ''}
+                    </span>
                   </div>
                   <div className={viewMode === 'grid' ? 'grid gap-2' : ''}>
                     {categoryItems.map(item => (
@@ -281,7 +281,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
               <div className="mt-4 col-span-full">
                 <div className="px-3 md:px-4 py-2 bg-muted/50 font-medium text-sm text-gray-600 uppercase flex items-center">
                   <Trash2 size={14} className="mr-2" />
-                  Checked Items
+                  Completed Items
                 </div>
                 <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-2' : ''}>
                   {items
