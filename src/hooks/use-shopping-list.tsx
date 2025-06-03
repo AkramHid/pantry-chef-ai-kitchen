@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -24,20 +23,26 @@ export function useShoppingList() {
           // Set the new shopping list items from the passed state (already sorted by grocery logic)
           setShoppingItems(prev => {
             // Merge with existing items, avoid duplicates by name
-            const existingNames = new Set(prev.map(item => item.name));
-            const newItems = newList.items.filter(item => !existingNames.has(item.name));
+            const existingNames = new Set(prev.map(item => item.name.toLowerCase()));
+            const newItems = newList.items.filter(item => !existingNames.has(item.name.toLowerCase()));
             
             // Add new items to database asynchronously
             newItems.forEach(async (item) => {
               try {
-                await supabase.from('shopping_list').insert({
-                  name: item.name,
-                  quantity: item.quantity || 1,
-                  unit: item.unit || 'pc',
-                  category: item.category || 'General',
-                  ischecked: item.isChecked || false,
-                  note: item.note
-                });
+                const { error } = await supabase
+                  .from('shopping_list')
+                  .insert({
+                    name: item.name.trim(),
+                    quantity: Number(item.quantity) || 1,
+                    unit: item.unit || 'pc',
+                    category: item.category || 'General',
+                    ischecked: item.isChecked || false,
+                    note: item.note || null
+                  });
+                
+                if (error) {
+                  console.error('Error adding item to shopping list:', error);
+                }
               } catch (err) {
                 console.error('Error adding item to shopping list:', err);
               }
@@ -66,7 +71,10 @@ export function useShoppingList() {
           .select('*')
           .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Database error:', error);
+          throw error;
+        }
         
         if (data && data.length > 0) {
           console.log('Shopping items from DB:', data);
@@ -127,10 +135,13 @@ export function useShoppingList() {
       // Update in database if Supabase is available
       const { error } = await supabase
         .from('shopping_list')
-        .update({ ischecked: updatedItem.isChecked }) // Use ischecked for DB, isChecked for UI
+        .update({ ischecked: updatedItem.isChecked })
         .eq('id', id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
     } catch (error) {
       console.error('Error toggling item:', error);
       toast({
@@ -166,7 +177,10 @@ export function useShoppingList() {
         .delete()
         .eq('id', id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
       
       toast({
         title: "Item removed",
@@ -208,17 +222,20 @@ export function useShoppingList() {
       const { data, error } = await supabase
         .from('shopping_list')
         .insert({
-          name: newItem.name,
-          quantity: newItem.quantity,
-          unit: newItem.unit,
-          category: newItem.category,
-          ischecked: newItem.isChecked, // Use ischecked for DB, isChecked for UI
-          note: newItem.note
+          name: newItem.name.trim(),
+          quantity: Number(newItem.quantity) || 1,
+          unit: newItem.unit || 'pc',
+          category: newItem.category || 'General',
+          ischecked: newItem.isChecked,
+          note: newItem.note || null
         })
         .select('*')
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
       
       // Use the returned item with the proper database ID
       if (data) {
@@ -228,7 +245,7 @@ export function useShoppingList() {
           quantity: data.quantity || 1,
           unit: data.unit || 'pc',
           category: data.category || 'General',
-          isChecked: data.ischecked || false, // Map from ischecked (DB) to isChecked (UI)
+          isChecked: data.ischecked || false,
           note: data.note
         };
         

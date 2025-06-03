@@ -43,7 +43,10 @@ export function useGrabAndGo() {
           .eq('ischecked', false)
           .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Database error:', error);
+          throw error;
+        }
         
         if (data && data.length > 0) {
           console.log('Grab & Go items from DB:', data);
@@ -104,7 +107,12 @@ export function useGrabAndGo() {
         .update({ ischecked: updatedItem.isChecked })
         .eq('id', id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Item toggled successfully:', id, updatedItem.isChecked);
     } catch (error) {
       console.error('Error toggling item:', error);
       toast({
@@ -124,10 +132,18 @@ export function useGrabAndGo() {
 
   const handleImportFromList = async (listItems: ShoppingItemData[]) => {
     try {
-      // Add new items to database
-      const itemsToAdd = listItems.filter(item => 
-        !shoppingItems.some(existing => existing.name.toLowerCase() === item.name.toLowerCase())
+      console.log('Starting import of items:', listItems);
+      
+      // Filter out items that already exist (by name, case-insensitive)
+      const existingNames = new Set(
+        shoppingItems.map(item => item.name.toLowerCase().trim())
       );
+      
+      const itemsToAdd = listItems.filter(item => 
+        !existingNames.has(item.name.toLowerCase().trim())
+      );
+      
+      console.log('Items to add after filtering:', itemsToAdd);
       
       if (itemsToAdd.length === 0) {
         toast({
@@ -138,24 +154,32 @@ export function useGrabAndGo() {
         return;
       }
       
+      // Prepare items for database insertion
+      const itemsForDb = itemsToAdd.map(item => ({
+        name: item.name.trim(),
+        quantity: Number(item.quantity) || 1,
+        unit: item.unit || 'pc',
+        category: item.category || 'General',
+        ischecked: false,
+        note: item.note || null
+      }));
+      
+      console.log('Inserting items to database:', itemsForDb);
+      
       // Insert new items into database
       const { data, error } = await supabase
         .from('shopping_list')
-        .insert(
-          itemsToAdd.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            unit: item.unit,
-            category: item.category,
-            ischecked: false,
-            note: item.note
-          }))
-        )
+        .insert(itemsForDb)
         .select('*');
         
-      if (error) throw error;
+      if (error) {
+        console.error('Database insertion error:', error);
+        throw error;
+      }
       
-      if (data) {
+      console.log('Database insertion successful:', data);
+      
+      if (data && data.length > 0) {
         const newItems: ShoppingItemData[] = data.map(item => ({
           id: getIdAsString(item.id),
           name: item.name,
@@ -172,7 +196,7 @@ export function useGrabAndGo() {
         toast({
           title: "Items imported successfully",
           description: `Added ${itemsToAdd.length} item${itemsToAdd.length > 1 ? 's' : ''} to Grab & Go mode.`,
-          duration: 2000,
+          duration: 3000,
         });
       }
     } catch (error) {
