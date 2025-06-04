@@ -118,7 +118,6 @@ const RecipesPage = () => {
       const mockRecipe: GeneratedRecipe = {
         id: `recipe-${Date.now()}`,
         title: `${selectedStyle} Recipe with ${ingredients.slice(0, 2).join(' and ')}`,
-        description: `A delicious ${selectedStyle.toLowerCase()} recipe using your selected ingredients.`,
         ingredients: ingredients.map(ing => `1 cup ${ing}`),
         instructions: [
           'Prepare all ingredients',

@@ -142,8 +142,8 @@ const PantryPage = () => {
       id: `list-${Date.now()}`,
       name,
       items: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     setCustomLists(prev => [...prev, newList]);
     toast({
@@ -162,14 +162,14 @@ const PantryPage = () => {
 
   const handleRenameList = (id: string, newName: string) => {
     setCustomLists(prev => prev.map(list => 
-      list.id === id ? { ...list, name: newName, updatedAt: new Date() } : list
+      list.id === id ? { ...list, name: newName, updatedAt: new Date().toISOString() } : list
     ));
   };
 
   const handleRemoveFromList = (itemId: string, listId: string) => {
     setCustomLists(prev => prev.map(list =>
       list.id === listId 
-        ? { ...list, items: list.items.filter(id => id !== itemId), updatedAt: new Date() }
+        ? { ...list, items: list.items.filter(id => id !== itemId), updatedAt: new Date().toISOString() }
         : list
     ));
   };
