@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PantryList from '@/components/pantry/PantryList';
-import PantryActions from '@/components/pantry/PantryActions';
+import CustomLists from '@/components/pantry/CustomLists';
 import { useToast } from '@/hooks/use-toast';
 import { usePantry } from '@/hooks/use-pantry';
 import { useAuth } from '@/hooks/use-auth';
@@ -32,8 +34,6 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-
-export type { CustomListType };
 
 const formSchema = z.object({
   name: z.string().min(1, "Item name is required"),
@@ -65,6 +65,7 @@ const PantryPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [filterCategory, setFilterCategory] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [customLists, setCustomLists] = useState<CustomListType[]>([]);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,6 +79,19 @@ const PantryPage = () => {
       note: "",
     },
   });
+
+  // Load custom lists from localStorage
+  useEffect(() => {
+    const savedLists = localStorage.getItem('pantryChef_customLists');
+    if (savedLists) {
+      setCustomLists(JSON.parse(savedLists));
+    }
+  }, []);
+
+  // Save custom lists to localStorage
+  useEffect(() => {
+    localStorage.setItem('pantryChef_customLists', JSON.stringify(customLists));
+  }, [customLists]);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -121,6 +135,43 @@ const PantryPage = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleCreateList = (name: string) => {
+    const newList: CustomListType = {
+      id: `list-${Date.now()}`,
+      name,
+      items: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    setCustomLists(prev => [...prev, newList]);
+    toast({
+      title: "List created",
+      description: `${name} list has been created`,
+    });
+  };
+
+  const handleDeleteList = (id: string) => {
+    setCustomLists(prev => prev.filter(list => list.id !== id));
+    toast({
+      title: "List deleted",
+      description: "List has been removed",
+    });
+  };
+
+  const handleRenameList = (id: string, newName: string) => {
+    setCustomLists(prev => prev.map(list => 
+      list.id === id ? { ...list, name: newName, updatedAt: new Date() } : list
+    ));
+  };
+
+  const handleRemoveFromList = (itemId: string, listId: string) => {
+    setCustomLists(prev => prev.map(list =>
+      list.id === listId 
+        ? { ...list, items: list.items.filter(id => id !== itemId), updatedAt: new Date() }
+        : list
+    ));
   };
 
   // Filter items based on search and category
@@ -266,91 +317,111 @@ const PantryPage = () => {
             </Dialog>
           </motion.div>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
-            <CardHeader className="pb-2">
-              <div className="flex flex-col lg:flex-row gap-4 w-full">
-                <div className="relative flex-grow">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search pantry items..."
-                    className="pl-8 bg-white"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <select
-                    value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  >
-                    {categories.map(category => (
-                      <option key={category} value={category}>
-                        {category === 'all' ? 'All Categories' : category}
-                      </option>
-                    ))}
-                  </select>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className={viewMode === 'grid' ? 'bg-muted' : ''} 
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <Grid3X3 size={18} />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className={viewMode === 'list' ? 'bg-muted' : ''} 
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List size={18} />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
+          <Tabs defaultValue="items" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="items">All Items</TabsTrigger>
+              <TabsTrigger value="lists">Custom Lists</TabsTrigger>
+            </TabsList>
             
-            <CardContent>
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kitchen-green mx-auto"></div>
-                  <p className="mt-2 text-muted-foreground">Loading pantry items...</p>
-                </div>
-              ) : filteredItems.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">🥫</div>
-                  <h3 className="text-lg font-medium mb-2">
-                    {searchQuery || filterCategory !== 'all' ? 'No matching items found' : 'Your pantry is empty'}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {searchQuery || filterCategory !== 'all' 
-                      ? 'Try adjusting your search or filter'
-                      : 'Add your first item to get started tracking your pantry'
-                    }
-                  </p>
-                  {!searchQuery && filterCategory === 'all' && (
-                    <Button 
-                      onClick={() => setIsAddDialogOpen(true)}
-                      className="bg-kitchen-green hover:bg-kitchen-green/90"
-                    >
-                      <Plus size={18} className="mr-1" />
-                      Add Your First Item
-                    </Button>
+            <TabsContent value="items">
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
+                <CardHeader className="pb-2">
+                  <div className="flex flex-col lg:flex-row gap-4 w-full">
+                    <div className="relative flex-grow">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search pantry items..."
+                        className="pl-8 bg-white"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      >
+                        {categories.map(category => (
+                          <option key={category} value={category}>
+                            {category === 'all' ? 'All Categories' : category}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className={viewMode === 'grid' ? 'bg-muted' : ''} 
+                        onClick={() => setViewMode('grid')}
+                      >
+                        <Grid3X3 size={18} />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className={viewMode === 'list' ? 'bg-muted' : ''} 
+                        onClick={() => setViewMode('list')}
+                      >
+                        <List size={18} />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                <CardContent>
+                  {isLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kitchen-green mx-auto"></div>
+                      <p className="mt-2 text-muted-foreground">Loading pantry items...</p>
+                    </div>
+                  ) : filteredItems.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-6xl mb-4">🥫</div>
+                      <h3 className="text-lg font-medium mb-2">
+                        {searchQuery || filterCategory !== 'all' ? 'No matching items found' : 'Your pantry is empty'}
+                      </h3>
+                      <p className="text-muted-foreground mb-4">
+                        {searchQuery || filterCategory !== 'all' 
+                          ? 'Try adjusting your search or filter'
+                          : 'Add your first item to get started tracking your pantry'
+                        }
+                      </p>
+                      {!searchQuery && filterCategory === 'all' && (
+                        <Button 
+                          onClick={() => setIsAddDialogOpen(true)}
+                          className="bg-kitchen-green hover:bg-kitchen-green/90"
+                        >
+                          <Plus size={18} className="mr-1" />
+                          Add Your First Item
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <PantryList
+                      items={filteredItems}
+                      onIncrement={incrementQuantity}
+                      onDecrement={decrementQuantity}
+                      onDelete={deleteItem}
+                      onAddNew={() => setIsAddDialogOpen(true)}
+                    />
                   )}
-                </div>
-              ) : (
-                <PantryList
-                  items={filteredItems}
-                  onIncrement={incrementQuantity}
-                  onDecrement={decrementQuantity}
-                  onDelete={deleteItem}
-                  onAddNew={() => setIsAddDialogOpen(true)}
-                />
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="lists">
+              <CustomLists
+                lists={customLists}
+                pantryItems={items}
+                onCreateList={handleCreateList}
+                onDeleteList={handleDeleteList}
+                onRenameList={handleRenameList}
+                onRemoveFromList={handleRemoveFromList}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       

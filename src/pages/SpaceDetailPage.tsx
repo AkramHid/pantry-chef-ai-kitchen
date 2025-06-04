@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Search, Grid3X3, List, Filter } from 'lucide-react';
@@ -22,7 +23,27 @@ const SpaceDetailPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const space = spaces.find(s => s.id === spaceId);
-  const spaceItems = items.filter(item => item.category === space?.name);
+  
+  // Filter items based on space location or category matching
+  const spaceItems = items.filter(item => {
+    if (!space) return false;
+    // Try to match by category first, then by a more flexible matching
+    const spaceNameLower = space.name.toLowerCase();
+    const itemCategoryLower = item.category.toLowerCase();
+    
+    // Direct category match
+    if (itemCategoryLower === spaceNameLower) return true;
+    
+    // Flexible matching for common space names
+    if (spaceNameLower.includes('fridge') && itemCategoryLower === 'fridge') return true;
+    if (spaceNameLower.includes('freezer') && itemCategoryLower === 'freezer') return true;
+    if (spaceNameLower.includes('pantry') && itemCategoryLower === 'pantry') return true;
+    if (spaceNameLower.includes('cabinet') && itemCategoryLower === 'pantry') return true;
+    if (spaceNameLower.includes('cupboard') && itemCategoryLower === 'pantry') return true;
+    
+    return false;
+  });
+  
   const filteredItems = spaceItems.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -32,7 +53,10 @@ const SpaceDetailPage = () => {
       <div className="min-h-screen bg-kitchen-cream flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Space not found</h2>
-          <Button onClick={() => navigate('/spaces')}>
+          <p className="text-muted-foreground mb-4">
+            The space you're looking for doesn't exist or may have been removed.
+          </p>
+          <Button onClick={() => navigate('/spaces')} className="bg-kitchen-green hover:bg-kitchen-green/90">
             Back to Spaces
           </Button>
         </div>
@@ -60,7 +84,8 @@ const SpaceDetailPage = () => {
                 <ArrowLeft size={20} />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold font-heading text-kitchen-dark">
+                <h1 className="text-2xl font-bold font-heading text-kitchen-dark flex items-center gap-2">
+                  <span className="text-2xl">{space.icon}</span>
                   {space.name}
                 </h1>
                 <p className="text-muted-foreground">
@@ -69,7 +94,10 @@ const SpaceDetailPage = () => {
               </div>
             </div>
             
-            <Button className="bg-kitchen-green hover:bg-kitchen-green/90">
+            <Button 
+              className="bg-kitchen-green hover:bg-kitchen-green/90"
+              onClick={() => navigate('/pantry?action=add')}
+            >
               <Plus size={18} className="mr-1" />
               Add Item
             </Button>
@@ -127,11 +155,14 @@ const SpaceDetailPage = () => {
                   <p className="text-muted-foreground mb-4">
                     {searchQuery 
                       ? 'Try adjusting your search terms'
-                      : 'Add your first item to get started'
+                      : `Add items to your ${space.name.toLowerCase()} to get started`
                     }
                   </p>
                   {!searchQuery && (
-                    <Button className="bg-kitchen-green hover:bg-kitchen-green/90">
+                    <Button 
+                      className="bg-kitchen-green hover:bg-kitchen-green/90"
+                      onClick={() => navigate('/pantry?action=add')}
+                    >
                       <Plus size={18} className="mr-1" />
                       Add First Item
                     </Button>
@@ -144,7 +175,7 @@ const SpaceDetailPage = () => {
                   onIncrement={() => {}}
                   onDecrement={() => {}}
                   onDelete={() => {}}
-                  onAddNew={() => {}}
+                  onAddNew={() => navigate('/pantry?action=add')}
                 />
               )}
             </CardContent>

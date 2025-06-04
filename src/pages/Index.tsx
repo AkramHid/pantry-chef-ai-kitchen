@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,6 +11,8 @@ import { useShoppingList } from '@/hooks/use-shopping-list';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ChefTile from '@/components/home/ChefTile';
+import FloatingGrabAndGoButton from '@/components/home/FloatingGrabAndGoButton';
 import { format } from 'date-fns';
 import { PantryItemData } from '@/types/pantry';
 
@@ -73,6 +76,9 @@ const IndexPage = () => {
               Here's a snapshot of your kitchen activity.
             </p>
           </motion.section>
+
+          {/* Chef Rental Quick Access */}
+          <ChefTile />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <motion.section
@@ -194,6 +200,9 @@ const IndexPage = () => {
           </motion.section>
         </div>
       </main>
+
+      {/* Floating Grab & Go Button */}
+      <FloatingGrabAndGoButton />
 
       <Footer />
     </div>
