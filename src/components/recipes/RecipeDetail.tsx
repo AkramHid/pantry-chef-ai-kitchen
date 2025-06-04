@@ -1,436 +1,146 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Clock, ChefHat, Utensils, Share2, Copy, CheckCircle, ShoppingCart, Plus, Heart } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { supabase, getIdAsString } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Clock, Users, Heart, ChefHat, Utensils } from 'lucide-react';
+import { KitchenStyle } from './KitchenStyleSelector';
 
 export interface GeneratedRecipe {
-  id?: string;
+  id: string;
   title: string;
-  cookTime: number;
   ingredients: string[];
-  measurements?: string[];
-  steps: string[];
-  nutrition?: {
-    calories?: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
+  instructions: string[];
+  cookTime: number;
+  servings: number;
+  difficulty: string;
+  cuisine: string;
+  kitchenStyle?: KitchenStyle;
+  nutritionInfo?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
   };
-  tagline?: string;
-  image?: string;
-  cuisine?: string;
-  category?: string;
-  tags?: string[];
-  difficulty?: 'Easy' | 'Medium' | 'Hard';
-  matchingIngredients?: number;
-  missingIngredients?: string[];
 }
 
 interface RecipeDetailProps {
   recipe: GeneratedRecipe;
   onTryAnother: () => void;
-  kitchenStyle: string;
+  kitchenStyle: KitchenStyle;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
 }
 
-const RecipeDetail: React.FC<RecipeDetailProps> = ({ 
-  recipe, 
+const RecipeDetail: React.FC<RecipeDetailProps> = ({
+  recipe,
   onTryAnother,
   kitchenStyle,
   isFavorite = false,
-  onToggleFavorite
+  onToggleFavorite,
 }) => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [copying, setCopying] = useState(false);
-  const [pantryItems, setPantryItems] = useState<string[]>([]);
-  const [missingIngredients, setMissingIngredients] = useState<{ingredient: string, measurement?: string}[]>([]);
-  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchPantryItems = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('pantry_items')
-          .select('name');
-          
-        if (error) {
-          throw error;
-        }
-        
-        if (data && Array.isArray(data)) {
-          const itemNames = data.map(item => item.name?.toLowerCase()).filter(Boolean);
-          setPantryItems(itemNames);
-          
-          // Identify missing ingredients
-          const missing = recipe.ingredients
-            .filter(ingredient => !itemNames.some(item => 
-              ingredient.toLowerCase().includes(item) || 
-              item.includes(ingredient.toLowerCase())
-            ))
-            .map((ingredient, index) => ({
-              ingredient,
-              measurement: recipe.measurements?.[index]
-            }));
-            
-          setMissingIngredients(missing);
-        }
-      } catch (error) {
-        console.error('Error fetching pantry items:', error);
-        // Fallback to using recipe's missingIngredients if available
-        if (recipe.missingIngredients) {
-          setMissingIngredients(recipe.missingIngredients.map(ing => ({
-            ingredient: ing,
-            measurement: undefined
-          })));
-        }
-      }
-    };
-    
-    fetchPantryItems();
-  }, [recipe]);
-
-  const createShareText = () => {
-    const ingredientsList = recipe.ingredients.map((i, index) => {
-      const measurement = recipe.measurements?.[index] ? `${recipe.measurements[index]} ` : '';
-      return `• ${measurement}${i}`;
-    }).join('\n');
-    
-    const stepsList = recipe.steps.map((s, i) => `${i+1}. ${s}`).join('\n');
-    
-    return `🍽️ ${recipe.title} 🍽️\n\n${recipe.tagline || ''}\n\nCooking Time: ${recipe.cookTime} min\nStyle: ${recipe.cuisine || kitchenStyle}\n\n📋 INGREDIENTS:\n${ingredientsList}\n\n📝 INSTRUCTIONS:\n${stepsList}`;
-  };
-
-  const handleShare = async () => {
-    const shareText = createShareText();
-
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: recipe.title,
-          text: shareText,
-        });
-        toast({
-          title: "Shared successfully!",
-          description: "Recipe has been shared",
-        });
-      } else {
-        // Fallback to copy to clipboard
-        handleCopyToClipboard();
-      }
-    } catch (err) {
-      console.error('Error sharing:', err);
-      // If sharing fails, fall back to clipboard
-      handleCopyToClipboard();
-    }
-  };
-
-  const handleCopyToClipboard = async () => {
-    const shareText = createShareText();
-    
-    setCopying(true);
-    try {
-      await navigator.clipboard.writeText(shareText);
-      toast({
-        title: "Copied to clipboard!",
-        description: "Recipe has been copied and is ready to share",
-      });
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      toast({
-        title: "Couldn't copy automatically",
-        description: "Please select and copy the recipe manually",
-        variant: "destructive",
-      });
-    } finally {
-      setTimeout(() => setCopying(false), 2000);
-    }
-  };
-
-  const toggleIngredient = (ingredient: string) => {
-    setSelectedIngredients(prev => 
-      prev.includes(ingredient)
-        ? prev.filter(item => item !== ingredient)
-        : [...prev, ingredient]
-    );
-  };
-
-  const addToShoppingList = async () => {
-    if (selectedIngredients.length === 0) {
-      toast({
-        title: "No ingredients selected",
-        description: "Please select ingredients to add to your shopping list",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Get current shopping list to avoid duplicates
-      const { data: existingItems, error } = await supabase
-        .from('shopping_list')
-        .select('name');
-        
-      if (error) {
-        throw error;
-      }
-      
-      const existingNames = existingItems?.map(item => item.name.toLowerCase()) || [];
-      
-      // Filter out any ingredients already in the shopping list
-      const newIngredients = selectedIngredients.filter(
-        ingredient => !existingNames.includes(ingredient.toLowerCase())
-      );
-      
-      if (newIngredients.length > 0) {
-        // Add new ingredients to shopping list
-        const newItems = newIngredients.map(ingredient => ({
-          name: ingredient,
-          category: 'Recipe Ingredients',
-          quantity: 1,
-          unit: 'pc',
-          ischecked: false
-        }));
-        
-        const { error: insertError } = await supabase
-          .from('shopping_list')
-          .insert(newItems);
-          
-        if (insertError) {
-          throw insertError;
-        }
-        
-        toast({
-          title: "Added to shopping list",
-          description: `${newIngredients.length} ingredient${newIngredients.length > 1 ? 's' : ''} added to your shopping list`,
-        });
-        
-        // Navigate to shopping list page
-        navigate('/shopping-list');
-      } else {
-        toast({
-          title: "Ingredients already in list",
-          description: "All selected ingredients are already in your shopping list",
-        });
-      }
-    } catch (error) {
-      console.error('Error adding to shopping list:', error);
-      toast({
-        title: "Couldn't add to shopping list",
-        description: "There was an error adding ingredients to your shopping list",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6 animate-fade-in">
-      <div className="p-6">
-        <div className="mb-4 text-center">
-          <h2 className="text-xl font-bold text-center text-kitchen-dark mb-1">
-            ✨ Recipe Details
-          </h2>
-        </div>
-        
-        <div className="mb-6 relative">
-          <h1 className="text-2xl font-bold mb-2 text-kitchen-green">{recipe.title}</h1>
-          <p className="text-gray-600 italic">{recipe.tagline || `A delicious ${recipe.cuisine || kitchenStyle} recipe`}</p>
-          
-          {onToggleFavorite && (
-            <button
-              onClick={onToggleFavorite}
-              className={`absolute top-0 right-0 p-2 rounded-full ${
-                isFavorite ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-500'
-              } hover:scale-110 transition-transform`}
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-            >
-              <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
-            </button>
-          )}
-          
-          {recipe.image && (
-            <div className="my-4">
-              <img 
-                src={recipe.image} 
-                alt={recipe.title} 
-                className="w-full h-48 object-cover rounded-md"
-                onError={(e) => {
-                  // Fallback image if the main one fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null;
-                  target.src = `https://source.unsplash.com/random/800x600/?food,${recipe.title.toLowerCase().replace(/\s+/g, ',')}`;
-                }}
-              />
-            </div>
-          )}
-          
-          <div className="flex flex-wrap items-center text-sm text-gray-600 mt-3">
-            <Clock size={16} className="mr-1 text-kitchen-green" />
-            <span className="mr-2">{recipe.cookTime} min</span>
-            
-            {recipe.cuisine && (
-              <>
-                <span className="mx-1">•</span>
-                <ChefHat size={16} className="mr-1 ml-1 text-kitchen-green" />
-                <span className="mr-2">{recipe.cuisine} Cuisine</span>
-              </>
-            )}
-            
-            {recipe.category && (
-              <>
-                <span className="mx-1">•</span>
-                <span className="px-2 py-1 bg-muted text-xs rounded-full">{recipe.category}</span>
-              </>
-            )}
-            
-            {recipe.difficulty && (
-              <>
-                <span className="mx-1">•</span>
-                <span className={`px-2 py-1 text-xs rounded-full ${
-                  recipe.difficulty === 'Easy' 
-                    ? 'bg-green-100 text-green-800' 
-                    : recipe.difficulty === 'Medium'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                }`}>
-                  {recipe.difficulty}
-                </span>
-              </>
+    <div className="space-y-6">
+      <Card className="bg-white/80 backdrop-blur-sm shadow-lg">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <ChefHat className="w-6 h-6 text-kitchen-orange" />
+              {recipe.title}
+            </CardTitle>
+            {onToggleFavorite && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggleFavorite}
+                className="text-red-500 hover:text-red-600"
+              >
+                <Heart 
+                  size={20} 
+                  className={isFavorite ? 'fill-current' : ''} 
+                />
+              </Button>
             )}
           </div>
-        </div>
-        
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2 flex items-center">
-            <Utensils size={16} className="mr-2 text-kitchen-green" />
-            Ingredients
-          </h3>
-          <ul className="list-disc pl-5 space-y-1">
-            {recipe.ingredients.map((ingredient, index) => {
-              const measurement = recipe.measurements?.[index] ? `${recipe.measurements[index]} ` : '';
-              const isInPantry = pantryItems.some(item => 
-                ingredient.toLowerCase().includes(item) || 
-                item.includes(ingredient.toLowerCase())
-              );
-              
-              return (
-                <li key={index} className={`${isInPantry ? 'text-gray-700' : 'text-orange-500 font-medium'}`}>
-                  {measurement}{ingredient}
-                  {!isInPantry && ' (not in pantry)'}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">Instructions</h3>
-          <ol className="list-decimal pl-5 space-y-2">
-            {recipe.steps.map((step, index) => (
-              <li key={index} className="text-gray-700">{step}</li>
-            ))}
-          </ol>
-        </div>
-        
-        {recipe.nutrition && (
-          <div className="mb-6 p-3 bg-muted rounded-lg">
-            <h3 className="text-sm font-semibold mb-1">Nutrition Info (estimated)</h3>
-            <div className="grid grid-cols-4 gap-2 text-xs text-center">
-              {recipe.nutrition.calories !== undefined && (
-                <div>
-                  <div className="font-bold">{recipe.nutrition.calories}</div>
-                  <div className="text-gray-500">Calories</div>
-                </div>
-              )}
-              {recipe.nutrition.protein !== undefined && (
-                <div>
-                  <div className="font-bold">{recipe.nutrition.protein}g</div>
-                  <div className="text-gray-500">Protein</div>
-                </div>
-              )}
-              {recipe.nutrition.carbs !== undefined && (
-                <div>
-                  <div className="font-bold">{recipe.nutrition.carbs}g</div>
-                  <div className="text-gray-500">Carbs</div>
-                </div>
-              )}
-              {recipe.nutrition.fat !== undefined && (
-                <div>
-                  <div className="font-bold">{recipe.nutrition.fat}g</div>
-                  <div className="text-gray-500">Fat</div>
-                </div>
-              )}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Clock size={16} />
+              <span>{recipe.cookTime} min</span>
             </div>
+            <div className="flex items-center gap-1">
+              <Users size={16} />
+              <span>{recipe.servings} servings</span>
+            </div>
+            <Badge variant="outline">{recipe.difficulty}</Badge>
+            <Badge variant="outline">{recipe.cuisine}</Badge>
           </div>
-        )}
+        </CardHeader>
         
-        {missingIngredients.length > 0 && (
-          <div className="mb-6 p-4 border border-orange-200 bg-orange-50 rounded-lg">
-            <h3 className="text-sm font-semibold mb-2 flex items-center text-orange-700">
-              <ShoppingCart size={16} className="mr-2" />
-              Missing Ingredients
+        <CardContent className="space-y-6">
+          <div>
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Utensils size={18} />
+              Ingredients
             </h3>
-            
             <ul className="space-y-2">
-              {missingIngredients.map((item, index) => (
-                <li key={index} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`missing-${index}`}
-                    checked={selectedIngredients.includes(item.ingredient)}
-                    onChange={() => toggleIngredient(item.ingredient)}
-                    className="mr-2 h-4 w-4 rounded border-gray-300 text-kitchen-green focus:ring-kitchen-green"
-                  />
-                  <label htmlFor={`missing-${index}`} className="text-sm">
-                    {item.measurement ? `${item.measurement} ` : ''}{item.ingredient}
-                  </label>
+              {recipe.ingredients.map((ingredient, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-kitchen-green rounded-full"></span>
+                  {ingredient}
                 </li>
               ))}
             </ul>
-            
-            <Button
-              onClick={addToShoppingList}
-              disabled={selectedIngredients.length === 0}
-              className="mt-3 w-full bg-orange-500 hover:bg-orange-600 text-white"
-              size="sm"
+          </div>
+          
+          <div>
+            <h3 className="font-semibold mb-3">Instructions</h3>
+            <ol className="space-y-3">
+              {recipe.instructions.map((instruction, index) => (
+                <li key={index} className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 bg-kitchen-green text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    {index + 1}
+                  </span>
+                  <span>{instruction}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          
+          {recipe.nutritionInfo && (
+            <div>
+              <h3 className="font-semibold mb-3">Nutrition Info</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-kitchen-cream rounded-lg">
+                  <div className="text-lg font-bold text-kitchen-green">{recipe.nutritionInfo.calories}</div>
+                  <div className="text-sm text-muted-foreground">Calories</div>
+                </div>
+                <div className="text-center p-3 bg-kitchen-cream rounded-lg">
+                  <div className="text-lg font-bold text-kitchen-green">{recipe.nutritionInfo.protein}g</div>
+                  <div className="text-sm text-muted-foreground">Protein</div>
+                </div>
+                <div className="text-center p-3 bg-kitchen-cream rounded-lg">
+                  <div className="text-lg font-bold text-kitchen-green">{recipe.nutritionInfo.carbs}g</div>
+                  <div className="text-sm text-muted-foreground">Carbs</div>
+                </div>
+                <div className="text-center p-3 bg-kitchen-cream rounded-lg">
+                  <div className="text-lg font-bold text-kitchen-green">{recipe.nutritionInfo.fat}g</div>
+                  <div className="text-sm text-muted-foreground">Fat</div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="pt-4 border-t">
+            <Button 
+              onClick={onTryAnother}
+              variant="outline"
+              className="w-full"
             >
-              <Plus size={16} className="mr-1" />
-              Add Selected to Shopping List
+              Try Another Recipe
             </Button>
           </div>
-        )}
-        
-        <div className="flex space-x-3">
-          <Button 
-            variant="default" 
-            className="flex-1 bg-kitchen-green hover:bg-kitchen-green/90"
-            onClick={onTryAnother}
-          >
-            Try Another
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex-1 border-kitchen-green text-kitchen-green hover:bg-kitchen-green hover:text-white"
-            onClick={handleShare}
-          >
-            {copying ? (
-              <>
-                <CheckCircle size={16} className="mr-1" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Share2 size={16} className="mr-1" />
-                Save & Share
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

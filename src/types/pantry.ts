@@ -4,6 +4,7 @@ export interface CustomListType {
   name: string;
   items: string[];
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface PantryItemData {
