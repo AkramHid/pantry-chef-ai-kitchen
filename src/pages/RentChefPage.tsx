@@ -5,11 +5,11 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ChefPageHero from '@/components/chef/ChefPageHero';
-import ChefFilter from '@/components/chef/ChefFilter';
+import { ChefFilter } from '@/components/chef/ChefFilter';
 import ChefList from '@/components/chef/ChefList';
 import ChefBookingSidebar from '@/components/chef/ChefBookingSidebar';
-import { chefData } from '@/data/chefData';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ChefCategory, ChefStyle } from '@/types/chef';
 
 export interface Chef {
   id: string;
@@ -27,25 +27,46 @@ export interface Chef {
   location: string;
 }
 
-export interface ChefFilters {
-  cuisine: string;
-  priceRange: [number, number];
-  rating: number;
-  availability: string;
-  location: string;
-}
+// Mock chef data
+const mockChefs: Chef[] = [
+  {
+    id: '1',
+    name: 'Chef Maria Rodriguez',
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400',
+    rating: 4.9,
+    reviewCount: 127,
+    cuisine: ['Mexican', 'Spanish', 'Mediterranean'],
+    price: 150,
+    experience: 8,
+    availability: ['weekends', 'evenings'],
+    bio: 'Professional chef with 8 years of experience in Mexican and Mediterranean cuisine.',
+    specialties: ['Tacos', 'Paella', 'Authentic Mexican dishes'],
+    languages: ['English', 'Spanish'],
+    location: 'Downtown'
+  },
+  {
+    id: '2',
+    name: 'Chef James Wilson',
+    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400',
+    rating: 4.8,
+    reviewCount: 89,
+    cuisine: ['Italian', 'French'],
+    price: 180,
+    experience: 12,
+    availability: ['weekdays', 'weekends'],
+    bio: 'Expert in Italian and French cuisine with 12 years of professional experience.',
+    specialties: ['Pasta', 'French pastries', 'Wine pairing'],
+    languages: ['English', 'Italian', 'French'],
+    location: 'Midtown'
+  }
+];
 
 const RentChefPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [selectedChef, setSelectedChef] = useState<Chef | null>(null);
-  const [filters, setFilters] = useState<ChefFilters>({
-    cuisine: 'all',
-    priceRange: [0, 500],
-    rating: 0,
-    availability: 'all',
-    location: 'all'
-  });
+  const [selectedCategory, setSelectedCategory] = useState<ChefCategory>('all');
+  const [selectedStyle, setSelectedStyle] = useState<ChefStyle>('all');
 
   const handleChefSelect = (chef: Chef) => {
     setSelectedChef(chef);
@@ -55,14 +76,10 @@ const RentChefPage = () => {
     setSelectedChef(null);
   };
 
-  const filteredChefs = chefData.filter((chef) => {
-    const matchesCuisine = filters.cuisine === 'all' || chef.cuisine.includes(filters.cuisine);
-    const matchesPrice = chef.price >= filters.priceRange[0] && chef.price <= filters.priceRange[1];
-    const matchesRating = chef.rating >= filters.rating;
-    const matchesAvailability = filters.availability === 'all' || chef.availability.includes(filters.availability);
-    const matchesLocation = filters.location === 'all' || chef.location === filters.location;
-
-    return matchesCuisine && matchesPrice && matchesRating && matchesAvailability && matchesLocation;
+  const filteredChefs = mockChefs.filter((chef) => {
+    const matchesCategory = selectedCategory === 'all' || true; // Simplified for now
+    const matchesStyle = selectedStyle === 'all' || chef.cuisine.some(c => c === selectedStyle);
+    return matchesCategory && matchesStyle;
   });
 
   return (
@@ -86,7 +103,10 @@ const RentChefPage = () => {
 
       {/* Desktop Header */}
       <div className="hidden md:block">
-        <ChefPageHero />
+        <ChefPageHero 
+          title="Rent a Chef"
+          subtitle="Professional chefs available for your events and daily cooking needs"
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-4 md:py-8">
@@ -95,9 +115,10 @@ const RentChefPage = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-4">
               <ChefFilter
-                filters={filters}
-                onFiltersChange={setFilters}
-                totalChefs={filteredChefs.length}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                selectedStyle={selectedStyle}
+                onStyleChange={setSelectedStyle}
               />
             </div>
           </div>
@@ -122,7 +143,7 @@ const RentChefPage = () => {
 
               <ChefList
                 chefs={filteredChefs}
-                onChefSelect={handleChefSelect}
+                onChefClick={handleChefSelect}
                 selectedChefId={selectedChef?.id}
               />
             </motion.div>
@@ -133,7 +154,7 @@ const RentChefPage = () => {
             <div className="lg:col-span-1">
               <div className="sticky top-4">
                 <ChefBookingSidebar
-                  chef={selectedChef}
+                  selectedChef={selectedChef}
                   onClose={handleCloseSidebar}
                 />
               </div>
@@ -162,7 +183,7 @@ const RentChefPage = () => {
             <div className="p-4">
               <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
               <ChefBookingSidebar
-                chef={selectedChef}
+                selectedChef={selectedChef}
                 onClose={handleCloseSidebar}
                 isMobile={true}
               />

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Gift, Share, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import Header from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
 const ReferPage = () => {
@@ -33,7 +33,7 @@ const ReferPage = () => {
 
   return (
     <div className="min-h-screen bg-kitchen-cream kitchen-texture flex flex-col">
-      <Header title="Refer Friends" showBack={true} onBack={() => navigate(-1)} showSettings={false} />
+      <Header title="Refer Friends" />
       
       <main className="flex-1 px-4 py-6 mb-16">
         <div className="text-center mb-8">

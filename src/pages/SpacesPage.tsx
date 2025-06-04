@@ -5,7 +5,7 @@ import { Plus, Search, Home as HomeIcon, Grid3X3, PenSquare } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import Header from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SpacesList from '@/components/spaces/SpacesList';
 import CreateSpaceDialog from '@/components/spaces/CreateSpaceDialog';

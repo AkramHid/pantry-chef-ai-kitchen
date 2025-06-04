@@ -109,41 +109,49 @@ const Index = () => {
     {
       icon: Utensils,
       title: 'My Pantry',
-      subtitle: 'Track your ingredients',
-      path: '/pantry',
-      color: 'bg-kitchen-green',
-      textColor: 'text-white',
+      to: '/pantry',
+      variant: 'primary' as const,
       requiresAuth: true
     },
     {
       icon: ChefHat,
       title: 'Recipe Ideas',
-      subtitle: 'AI-powered suggestions',
-      path: '/recipes',
-      color: 'bg-kitchen-orange',
-      textColor: 'text-white',
+      to: '/recipes',
+      variant: 'secondary' as const,
       requiresAuth: false
     },
     {
       icon: ShoppingBag,
       title: 'Shopping Lists',
-      subtitle: 'Organize your shopping',
-      path: '/shopping-list',
-      color: 'bg-kitchen-blue',
-      textColor: 'text-white',
+      to: '/shopping-list',
+      variant: 'accent' as const,
       requiresAuth: true
     },
     {
       icon: Users,
       title: 'Family Sharing',
-      subtitle: 'Share with family',
-      path: '/family',
-      color: 'bg-kitchen-berry',
-      textColor: 'text-white',
-      requiresAuth: true,
-      disabled: true
+      to: '/family',
+      variant: 'primary' as const,
+      requiresAuth: true
     }
   ];
+
+  // Get expiring items for ExpiringSoonSection
+  const expiringSoonItems = pantryItems
+    .filter(item => {
+      if (!item.expiry_date) return false;
+      const expiryDate = new Date(item.expiry_date);
+      const today = new Date();
+      const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
+    })
+    .map(item => ({
+      id: item.id,
+      name: item.name,
+      daysLeft: Math.ceil((new Date(item.expiry_date!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
+      image: item.image_url
+    }))
+    .sort((a, b) => a.daysLeft - b.daysLeft);
 
   return (
     <div className="min-h-screen bg-kitchen-cream">
@@ -207,14 +215,14 @@ const Index = () => {
         </motion.section>
 
         {/* Expiring Soon Section - Only show if user is signed in */}
-        {user && !pantryLoading && pantryItems.length > 0 && (
+        {user && !pantryLoading && expiringSoonItems.length > 0 && (
           <motion.section 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
             className="px-4 py-6"
           >
-            <ExpiringSoonSection />
+            <ExpiringSoonSection items={expiringSoonItems} />
           </motion.section>
         )}
 
@@ -236,14 +244,14 @@ const Index = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 + index * 0.1, duration: 0.4 }}
+                  onClick={() => handleTileClick(feature.to, feature.requiresAuth)}
                 >
                   <ActionTile
                     icon={feature.icon}
                     title={feature.title}
-                    subtitle={feature.subtitle}
-                    onClick={() => handleTileClick(feature.path, feature.requiresAuth)}
-                    className={`${feature.color} ${feature.textColor} hover:scale-105 transition-all duration-200 shadow-lg`}
-                    disabled={feature.disabled}
+                    to={feature.to}
+                    variant={feature.variant}
+                    className="hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
                   />
                 </motion.div>
               ))}
