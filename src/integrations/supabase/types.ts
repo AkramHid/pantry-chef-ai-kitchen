@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      family_members: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          member_user_id: string | null
+          name: string
+          permissions: Json
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          member_user_id?: string | null
+          name: string
+          permissions?: Json
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          member_user_id?: string | null
+          name?: string
+          permissions?: Json
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       kitchen_styles: {
         Row: {
           created_at: string | null
@@ -24,6 +60,81 @@ export type Database = {
           created_at?: string | null
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      loyalty_cards: {
+        Row: {
+          barcode_data: string | null
+          card_number: string
+          created_at: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          qr_code_data: string | null
+          store_name: string
+          user_id: string
+        }
+        Insert: {
+          barcode_data?: string | null
+          card_number: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          qr_code_data?: string | null
+          store_name: string
+          user_id: string
+        }
+        Update: {
+          barcode_data?: string | null
+          card_number?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          qr_code_data?: string | null
+          store_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -66,6 +177,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shopping_list: {
         Row: {
           category: string | null
@@ -102,12 +243,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          auto_add_expiring: boolean
+          created_at: string
+          expiry_reminder_days: number
+          grocery_store_layout: string
+          id: string
+          notification_email: boolean
+          notification_push: boolean
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_add_expiring?: boolean
+          created_at?: string
+          expiry_reminder_days?: number
+          grocery_store_layout?: string
+          id?: string
+          notification_email?: boolean
+          notification_push?: boolean
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_add_expiring?: boolean
+          created_at?: string
+          expiry_reminder_days?: number
+          grocery_store_layout?: string
+          id?: string
+          notification_email?: boolean
+          notification_push?: boolean
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_expiry_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

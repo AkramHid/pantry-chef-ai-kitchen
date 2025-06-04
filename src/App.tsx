@@ -7,12 +7,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { AuthProvider } from "@/hooks/use-auth";
 import SplashScreen from "./components/home/SplashScreen";
 import Index from "./pages/Index";
 import PantryPage from "./pages/PantryPage";
 import RecipesPage from "./pages/RecipesPage";
 import ShoppingListPage from "./pages/ShoppingListPage";
 import GrabAndGoPage from "./pages/GrabAndGoPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoyaltyCardsPage from "./pages/LoyaltyCardsPage";
@@ -57,6 +59,7 @@ const AnimatedRoutes = () => {
         <Route path="/rent-chef" element={<RentChefPage />} />
         <Route path="/shopping-list" element={<ShoppingListPage />} />
         <Route path="/grab-and-go" element={<GrabAndGoPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/loyalty-cards" element={<LoyaltyCardsPage />} />
@@ -74,11 +77,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light">
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AnimatedRoutes />
-        </BrowserRouter>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AnimatedRoutes />
+          </BrowserRouter>
+        </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

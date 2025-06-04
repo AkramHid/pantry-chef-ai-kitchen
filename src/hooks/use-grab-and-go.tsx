@@ -5,17 +5,19 @@ import { useToast } from '@/hooks/use-toast';
 import { ShoppingItemData } from '@/components/shopping/ShoppingItem';
 import { supabase, getIdAsString } from '@/integrations/supabase/client';
 import { sortItemsByGroceryLogic } from '@/lib/grocery-store-logic';
+import { useAuth } from '@/hooks/use-auth';
 
 export function useGrabAndGo() {
   const { toast } = useToast();
   const location = useLocation();
+  const { user } = useAuth();
   
   const [shoppingItems, setShoppingItems] = useState<ShoppingItemData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Handle items passed from other pages
   useEffect(() => {
-    if (location.state) {
+    if (location.state && user) {
       if (location.state.selectedItems) {
         const newItems = location.state.selectedItems as ShoppingItemData[];
         const existingIds = new Set(shoppingItems.map(i => i.id));
@@ -31,81 +33,87 @@ export function useGrabAndGo() {
         }
       }
     }
-  }, [location.state, shoppingItems, toast]);
+  }, [location.state, shoppingItems, toast, user]);
   
   // Fetch unchecked shopping items from Supabase for Grab & Go
   useEffect(() => {
-    const fetchGrabAndGoItems = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('shopping_list')
-          .select('*')
-          .eq('ischecked', false)
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          console.error('Database error:', error);
-          throw error;
-        }
-        
-        if (data && data.length > 0) {
-          console.log('Grab & Go items from DB:', data);
-          
-          // Map the data to ShoppingItemData format
-          const mappedData: ShoppingItemData[] = data.map(item => ({
-            id: getIdAsString(item.id),
-            name: item.name,
-            quantity: item.quantity || 1,
-            unit: item.unit || 'pc',
-            category: item.category || 'General',
-            isChecked: item.ischecked || false,
-            note: item.note
-          }));
-          
-          // Sort by grocery store logic
-          const sortedItems = sortItemsByGroceryLogic(mappedData);
-          setShoppingItems(sortedItems);
-        } else {
-          console.log('No Grab & Go items found in DB');
-          setShoppingItems([]);
-        }
-      } catch (error) {
-        console.error('Error fetching Grab & Go items:', error);
-        toast({
-          title: 'Failed to load items',
-          description: 'Please try again',
-          variant: 'destructive',
-        });
-        setShoppingItems([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (user) {
+      fetchGrabAndGoItems();
+    } else {
+      setShoppingItems([]);
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  const fetchGrabAndGoItems = async () => {
+    if (!user) return;
     
-    fetchGrabAndGoItems();
-  }, [toast]);
+    try {
+      const { data, error } = await supabase
+        .from('shopping_list')
+        .select('*')
+        .eq('ischecked', false)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        console.log('Grab & Go items from DB:', data);
+        
+        const mappedData: ShoppingItemData[] = data.map(item => ({
+          id: getIdAsString(item.id),
+          name: item.name,
+          quantity: item.quantity || 1,
+          unit: item.unit || 'pc',
+          category: item.category || 'General',
+          isChecked: item.ischecked || false,
+          note: item.note
+        }));
+        
+        const sortedItems = sortItemsByGroceryLogic(mappedData);
+        setShoppingItems(sortedItems);
+      } else {
+        console.log('No Grab & Go items found in DB');
+        setShoppingItems([]);
+      }
+    } catch (error) {
+      console.error('Error fetching Grab & Go items:', error);
+      toast({
+        title: 'Failed to load items',
+        description: 'Please try again',
+        variant: 'destructive',
+      });
+      setShoppingItems([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Handler functions
   const handleToggle = async (id: string) => {
+    if (!user) return;
+    
     try {
-      // Find the item to toggle
       const item = shoppingItems.find(item => item.id === id);
       if (!item) return;
       
       const updatedItem = { ...item, isChecked: !item.isChecked };
       
-      // Optimistic UI update
       setShoppingItems(items =>
         items.map(item =>
           item.id === id ? updatedItem : item
         )
       );
       
-      // Update in database
       const { error } = await supabase
         .from('shopping_list')
         .update({ ischecked: updatedItem.isChecked })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
         
       if (error) {
         console.error('Database error:', error);
@@ -121,7 +129,6 @@ export function useGrabAndGo() {
         variant: 'destructive',
       });
       
-      // Revert the optimistic update on error
       setShoppingItems(items =>
         items.map(item =>
           item.id === id ? { ...item, isChecked: !item.isChecked } : item
@@ -131,10 +138,18 @@ export function useGrabAndGo() {
   };
 
   const handleImportFromList = async (listItems: ShoppingItemData[]) => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to import items',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     try {
       console.log('Starting import of items:', listItems);
       
-      // Filter out items that already exist (by name, case-insensitive)
       const existingNames = new Set(
         shoppingItems.map(item => item.name.toLowerCase().trim())
       );
@@ -154,19 +169,18 @@ export function useGrabAndGo() {
         return;
       }
       
-      // Prepare items for database insertion
       const itemsForDb = itemsToAdd.map(item => ({
         name: item.name.trim(),
         quantity: Number(item.quantity) || 1,
         unit: item.unit || 'pc',
         category: item.category || 'General',
         ischecked: false,
-        note: item.note || null
+        note: item.note || null,
+        user_id: user.id
       }));
       
       console.log('Inserting items to database:', itemsForDb);
       
-      // Insert new items into database
       const { data, error } = await supabase
         .from('shopping_list')
         .insert(itemsForDb)
@@ -190,7 +204,6 @@ export function useGrabAndGo() {
           note: item.note
         }));
         
-        // Update local state with sorted items
         setShoppingItems(prev => sortItemsByGroceryLogic([...prev, ...newItems]));
         
         toast({
@@ -221,7 +234,6 @@ export function useGrabAndGo() {
       return null;
     }
     
-    // Sort the checked items by grocery store logic for optimal shopping flow
     const sortedCheckedItems = sortItemsByGroceryLogic(checkedItems);
     
     const newListName = `Shopping List - ${new Date().toLocaleDateString()}`;

@@ -1,100 +1,116 @@
 
-import React from 'react';
-import { Settings, User, ArrowLeft, Bell } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, User, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/use-auth';
+import { useNotifications } from '@/hooks/use-notifications';
+import { AuthDialog } from '@/components/auth/AuthDialog';
 import { motion } from 'framer-motion';
 
 interface HeaderProps {
   title?: string;
-  showSettings?: boolean;
-  showBack?: boolean;
-  onBack?: () => void;
-  notificationCount?: number;
+  showBackButton?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  showSettings = true,
-  showBack = false,
-  onBack,
-  notificationCount = 0
-}) => {
+export function Header({ title = "Kitchen Assistant", showBackButton = false }: HeaderProps) {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const { user, signOut } = useAuth();
+  const { unreadCount } = useNotifications();
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-  const handleSettingsClick = () => {
-    navigate('/settings');
-  };
-
-  const handleBackClick = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate(-1);
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      // Error handling is done in the auth hook
     }
   };
 
   return (
-    <motion.header 
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="sticky top-0 z-40 flex items-center justify-between p-3 sm:p-4 border-b border-muted bg-white shadow-sm"
+    <motion.header
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white shadow-sm border-b border-gray-200 px-4 py-3"
     >
-      <div className="flex items-center">
-        {showBack && (
-          <motion.button 
-            onClick={handleBackClick} 
-            className="mr-2 sm:mr-3 p-1.5 text-kitchen-dark rounded-full hover:bg-muted"
-            aria-label="Go back"
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <ArrowLeft size={20} />
-          </motion.button>
-        )}
-        <motion.div whileHover={{ scale: 1.02 }}>
-          <Link to="/" className="flex items-center">
-            <img 
-              src="/lovable-uploads/39f717d2-59da-48cf-9598-a998871f5d86.png" 
-              alt="KOFFA Logo" 
-              className="h-8 sm:h-10" 
-            />
-          </Link>
-        </motion.div>
-      </div>
-      
-      {showSettings && (
-        <div className="flex gap-1 sm:gap-2 items-center">
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Link to="/profile" className="p-1.5 sm:p-2 rounded-full text-kitchen-dark hover:bg-muted">
-              <User size={isMobile ? 18 : 20} />
-            </Link>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Link to="/notifications" className="p-1.5 sm:p-2 rounded-full text-kitchen-dark hover:bg-muted relative">
-              <Bell size={isMobile ? 18 : 20} />
-              {notificationCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-kitchen-berry text-white text-xs">
-                  {notificationCount > 9 ? '9+' : notificationCount}
-                </Badge>
-              )}
-            </Link>
-          </motion.div>
-          <motion.button 
-            onClick={handleSettingsClick}
-            className="p-1.5 sm:p-2 rounded-full text-kitchen-dark hover:bg-muted" 
-            aria-label="Settings"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Settings size={isMobile ? 18 : 20} />
-          </motion.button>
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex items-center">
+          {showBackButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="mr-3"
+            >
+              ←
+            </Button>
+          )}
+          <h1 className="text-xl font-bold text-gray-900">{title}</h1>
         </div>
-      )}
+
+        <div className="flex items-center space-x-2">
+          {/* Notifications Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            onClick={() => navigate('/notifications')}
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Badge>
+            )}
+          </Button>
+
+          {/* User Menu */}
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <User size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAuthDialog(true)}
+            >
+              Sign In
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </motion.header>
   );
-};
-
-export default Header;
+}

@@ -6,20 +6,28 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
 
 const FloatingGrabAndGoButton = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const [itemCount, setItemCount] = useState(0);
 
   // Fetch count of unchecked items in Grab & Go
   useEffect(() => {
+    if (!user) {
+      setItemCount(0);
+      return;
+    }
+
     const fetchGrabAndGoCount = async () => {
       try {
         const { count, error } = await supabase
           .from('shopping_list')
           .select('*', { count: 'exact', head: true })
-          .eq('ischecked', false);
+          .eq('ischecked', false)
+          .eq('user_id', user.id);
         
         if (error) throw error;
         setItemCount(count || 0);
@@ -39,7 +47,8 @@ const FloatingGrabAndGoButton = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'shopping_list'
+          table: 'shopping_list',
+          filter: `user_id=eq.${user.id}`
         },
         () => {
           fetchGrabAndGoCount();
@@ -50,7 +59,7 @@ const FloatingGrabAndGoButton = () => {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, []);
+  }, [user]);
 
   return (
     <motion.div
