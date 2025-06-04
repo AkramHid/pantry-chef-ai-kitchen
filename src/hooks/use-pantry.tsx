@@ -41,8 +41,7 @@ export function usePantry() {
         expiryDate: item.expiry_date || undefined,
         addedDate: item.added_date || item.created_at,
         image: item.image_url || undefined,
-        user_id: item.user_id || undefined,
-        location: item.category
+        user_id: item.user_id || undefined
       }));
 
       setItems(mappedItems);
@@ -94,8 +93,7 @@ export function usePantry() {
         expiryDate: data.expiry_date || undefined,
         addedDate: data.added_date || data.created_at,
         image: data.image_url || undefined,
-        user_id: data.user_id,
-        location: data.category
+        user_id: data.user_id
       };
 
       setItems(prev => [mappedItem, ...prev]);

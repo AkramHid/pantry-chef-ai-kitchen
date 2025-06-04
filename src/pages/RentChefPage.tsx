@@ -25,7 +25,7 @@ const mockChefs: Chef[] = [
     experience: 8,
     availability: ['weekends', 'evenings'],
     description: 'Professional chef with 8 years of experience in Mexican and Mediterranean cuisine.',
-    specialties: ['tacos', 'paella', 'mexican'],
+    specialties: ['mexican', 'spanish', 'mediterranean'],
     languages: ['English', 'Spanish'],
     location: 'Downtown',
     gallery: []
@@ -42,7 +42,7 @@ const mockChefs: Chef[] = [
     experience: 12,
     availability: ['weekdays', 'weekends'],
     description: 'Expert in Italian and French cuisine with 12 years of professional experience.',
-    specialties: ['pasta', 'pastries', 'wine'],
+    specialties: ['italian', 'french'],
     languages: ['English', 'Italian', 'French'],
     location: 'Midtown',
     gallery: []
@@ -55,6 +55,8 @@ const RentChefPage = () => {
   const [selectedChef, setSelectedChef] = useState<Chef | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<ChefCategory>('all');
   const [selectedStyle, setSelectedStyle] = useState<ChefStyle>('all');
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [time, setTime] = useState('');
 
   const handleChefSelect = (chef: Chef) => {
     setSelectedChef(chef);
@@ -131,8 +133,12 @@ const RentChefPage = () => {
 
               <ChefList
                 chefs={filteredChefs}
-                onChefClick={handleChefSelect}
-                selectedChefId={selectedChef?.id}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedStyle={selectedStyle}
+                setSelectedStyle={setSelectedStyle}
+                onBookNow={handleChefSelect}
+                onViewGallery={handleChefSelect}
               />
             </motion.div>
           </div>
@@ -142,8 +148,10 @@ const RentChefPage = () => {
             <div className="lg:col-span-1">
               <div className="sticky top-4">
                 <ChefBookingSidebar
-                  selectedChef={selectedChef}
-                  onClose={handleCloseSidebar}
+                  date={date}
+                  setDate={setDate}
+                  time={time}
+                  setTime={setTime}
                 />
               </div>
             </div>
@@ -171,9 +179,10 @@ const RentChefPage = () => {
             <div className="p-4">
               <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
               <ChefBookingSidebar
-                selectedChef={selectedChef}
-                onClose={handleCloseSidebar}
-                isMobile={true}
+                date={date}
+                setDate={setDate}
+                time={time}
+                setTime={setTime}
               />
             </div>
           </motion.div>

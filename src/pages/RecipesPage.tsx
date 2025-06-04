@@ -18,17 +18,17 @@ const onboardingSteps = [
   {
     title: "Welcome to Recipe Ideas!",
     description: "Discover amazing recipes based on what you have in your pantry.",
-    image: "/lovable-uploads/recipes-welcome.jpg"
+    content: <img src="/lovable-uploads/recipes-welcome.jpg" alt="Welcome" className="w-full h-48 object-cover rounded-lg" />
   },
   {
     title: "AI-Powered Suggestions",
     description: "Our AI creates personalized recipes from your ingredients.",
-    image: "/lovable-uploads/ai-recipes.jpg"
+    content: <img src="/lovable-uploads/ai-recipes.jpg" alt="AI Recipes" className="w-full h-48 object-cover rounded-lg" />
   },
   {
     title: "Save Your Favorites",
     description: "Keep track of recipes you love for easy access later.",
-    image: "/lovable-uploads/favorite-recipes.jpg"
+    content: <img src="/lovable-uploads/favorite-recipes.jpg" alt="Favorites" className="w-full h-48 object-cover rounded-lg" />
   }
 ];
 
@@ -74,17 +74,17 @@ const RecipesPage = () => {
   };
 
   if (showSplash) {
-    return <RecipeSplashScreen />;
+    return <RecipeSplashScreen onComplete={handleSplashComplete} />;
   }
 
   if (showOnboarding) {
     return (
       <OnboardingScreen
-        onboardingStep={onboardingStep}
-        onboardingSteps={onboardingSteps}
-        setOnboardingStep={setOnboardingStep}
-        setShowOnboarding={setShowOnboarding}
-        handleBack={handleBack}
+        steps={onboardingSteps}
+        currentStep={onboardingStep}
+        onNext={() => setOnboardingStep(prev => prev + 1)}
+        onBack={() => setOnboardingStep(prev => prev - 1)}
+        onComplete={handleOnboardingComplete}
       />
     );
   }
@@ -123,17 +123,15 @@ const RecipesPage = () => {
             setShowGenerator={setShowGenerator}
             selectedStyle={selectedStyle}
             setSelectedStyle={setSelectedStyle}
-            selectedIngredients={[]}
-            setSelectedIngredients={() => {}}
-            selectedDifficulty=""
-            setSelectedDifficulty={() => {}}
-            selectedTime=""
-            setSelectedTime={() => {}}
-            selectedDiet=""
-            setSelectedDiet={() => {}}
+            generatedRecipe={null}
+            setGeneratedRecipe={() => {}}
+            selectedRecipe={null}
+            setSelectedRecipe={() => {}}
             isGenerating={false}
-            generatedRecipes={[]}
-            onGenerateRecipes={() => {}}
+            generateRecipe={async () => {}}
+            handleTryAnother={() => {}}
+            favoriteRecipes={[]}
+            onToggleFavorite={() => {}}
           />
           
           <Card className="bg-white/80 backdrop-blur-sm shadow-lg">

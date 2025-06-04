@@ -1,6 +1,4 @@
-import { PantryItemData } from '@/components/pantry/PantryItem';
-import { RecipeData } from '@/components/recipes/RecipeCard';
-import { ShoppingItemData } from '@/components/shopping/ShoppingItem';
+import { PantryItemData } from "@/types/pantry";
 
 // Mock pantry data
 export const mockPantryItems: PantryItemData[] = [
@@ -126,7 +124,7 @@ export const mockPantryItems: PantryItemData[] = [
     unit: 'pcs',
     category: 'freezer',
     addedDate: new Date().toISOString(),
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop'
+    image: 'https://images.unsplash.com/photo-1513104890138-7c74965c332a?w=800&auto=format&fit=crop'
   },
   {
     id: '14',
