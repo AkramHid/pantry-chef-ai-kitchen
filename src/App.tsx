@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useOffline } from "@/hooks/use-offline";
 import { AuthProvider } from "@/hooks/use-auth";
 import OfflineIndicator from "@/components/layout/OfflineIndicator";
+import SplashScreen from "@/components/onboarding/SplashScreen";
+import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import PantryPage from "./pages/PantryPage";
 import ShoppingListPage from "./pages/ShoppingListPage";
@@ -38,6 +40,26 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   const { isOnline } = useOffline();
+  const [showSplash, setShowSplash] = useState(true);
+  const [hasSeenSplash, setHasSeenSplash] = useState(false);
+
+  useEffect(() => {
+    const hasSeenSplashBefore = localStorage.getItem('hasSeenSplash');
+    if (hasSeenSplashBefore) {
+      setShowSplash(false);
+      setHasSeenSplash(true);
+    }
+  }, []);
+
+  const handleSplashComplete = () => {
+    localStorage.setItem('hasSeenSplash', 'true');
+    setShowSplash(false);
+    setHasSeenSplash(true);
+  };
+
+  if (showSplash && !hasSeenSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
 
   return (
     <>

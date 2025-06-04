@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CustomListType, PantryItemData } from '@/types/pantry';
-import { Plus, Edit, Trash2, X, Check, ListPlus } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Check, ListPlus, ShoppingCart } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -19,6 +20,7 @@ interface CustomListsProps {
   onDeleteList: (id: string) => void;
   onRenameList: (id: string, newName: string) => void;
   onRemoveFromList: (itemId: string, listId: string) => void;
+  onSendMissingToShopping?: (listId: string) => void;
 }
 
 const CustomLists: React.FC<CustomListsProps> = ({
@@ -28,6 +30,7 @@ const CustomLists: React.FC<CustomListsProps> = ({
   onDeleteList,
   onRenameList,
   onRemoveFromList,
+  onSendMissingToShopping,
 }) => {
   const [newListName, setNewListName] = useState('');
   const [editingListId, setEditingListId] = useState<string | null>(null);
@@ -55,6 +58,13 @@ const CustomLists: React.FC<CustomListsProps> = ({
 
   const cancelEdit = () => {
     setEditingListId(null);
+  };
+
+  const getMissingItemsCount = (list: CustomListType) => {
+    return list.items.filter(itemId => {
+      const item = pantryItems.find(i => i.id === itemId);
+      return !item || item.quantity === 0;
+    }).length;
   };
 
   return (
@@ -88,117 +98,149 @@ const CustomLists: React.FC<CustomListsProps> = ({
           </div>
         ) : (
           <Accordion type="multiple" className="w-full">
-            {lists.map((list) => (
-              <AccordionItem key={list.id} value={list.id}>
-                <AccordionTrigger className="py-3 hover:no-underline">
-                  <div className="flex items-center justify-between w-full pr-2">
-                    {editingListId === list.id ? (
-                      <div className="flex items-center gap-1 flex-1">
-                        <Input
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="h-7 text-sm"
-                          autoFocus
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            submitEdit();
-                          }}
-                        >
-                          <Check size={14} />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            cancelEdit();
-                          }}
-                        >
-                          <X size={14} />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <span className="font-medium text-kitchen-dark">{list.name}</span>
-                        <Badge variant="outline" className="ml-2 bg-muted/50">
-                          {list.items.length}
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {editingListId !== list.id && (
-                      <div className="flex items-center ml-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            startEditing(list);
-                          }}
-                        >
-                          <Edit size={14} />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          className="h-6 w-6 text-kitchen-berry" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteList(list.id);
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="py-2 px-1 space-y-2">
-                    {list.items.length === 0 ? (
-                      <div className="text-sm text-gray-500 italic p-2">
-                        No items in this list yet. Add items from your pantry.
-                      </div>
-                    ) : (
-                      list.items.map(itemId => {
-                        const item = pantryItems.find(i => i.id === itemId);
-                        if (!item) return null;
-                        
-                        return (
-                          <div 
-                            key={item.id} 
-                            className="flex items-center justify-between p-2 bg-muted/30 rounded"
+            {lists.map((list) => {
+              const missingCount = getMissingItemsCount(list);
+              
+              return (
+                <AccordionItem key={list.id} value={list.id}>
+                  <AccordionTrigger className="py-3 hover:no-underline">
+                    <div className="flex items-center justify-between w-full pr-2">
+                      {editingListId === list.id ? (
+                        <div className="flex items-center gap-1 flex-1">
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="h-7 text-sm"
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              submitEdit();
+                            }}
                           >
-                            <div className="text-sm font-medium">{item.name}</div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">
-                                {item.quantity} {item.unit}
-                              </span>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-6 w-6 text-gray-400 hover:text-kitchen-berry"
-                                onClick={() => onRemoveFromList(item.id, list.id)}
-                              >
-                                <X size={14} />
-                              </Button>
+                            <Check size={14} />
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              cancelEdit();
+                            }}
+                          >
+                            <X size={14} />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <span className="font-medium text-kitchen-dark">{list.name}</span>
+                          <Badge variant="outline" className="ml-2 bg-muted/50">
+                            {list.items.length}
+                          </Badge>
+                          {missingCount > 0 && (
+                            <Badge variant="destructive" className="ml-1">
+                              {missingCount} missing
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      
+                      {editingListId !== list.id && (
+                        <div className="flex items-center ml-2">
+                          {missingCount > 0 && onSendMissingToShopping && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6 text-kitchen-green"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSendMissingToShopping(list.id);
+                              }}
+                              title="Send missing items to shopping list"
+                            >
+                              <ShoppingCart size={14} />
+                            </Button>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditing(list);
+                            }}
+                          >
+                            <Edit size={14} />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-6 w-6 text-kitchen-berry" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteList(list.id);
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="py-2 px-1 space-y-2">
+                      {list.items.length === 0 ? (
+                        <div className="text-sm text-gray-500 italic p-2">
+                          No items in this list yet. Add items from your pantry.
+                        </div>
+                      ) : (
+                        list.items.map(itemId => {
+                          const item = pantryItems.find(i => i.id === itemId);
+                          const isMissing = !item || item.quantity === 0;
+                          
+                          return (
+                            <div 
+                              key={itemId} 
+                              className={`flex items-center justify-between p-2 rounded ${
+                                isMissing ? 'bg-red-50 border border-red-200' : 'bg-muted/30'
+                              }`}
+                            >
+                              <div className="text-sm font-medium">
+                                {item?.name || 'Unknown Item'}
+                                {isMissing && (
+                                  <span className="text-red-500 text-xs ml-2">(Missing)</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {item && (
+                                  <span className="text-xs text-gray-500">
+                                    {item.quantity} {item.unit}
+                                  </span>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6 text-gray-400 hover:text-kitchen-berry"
+                                  onClick={() => onRemoveFromList(itemId, list.id)}
+                                >
+                                  <X size={14} />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+                          );
+                        })
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
           </Accordion>
         )}
       </CardContent>
