@@ -1,20 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
-
-export interface PantryItemData {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  category: 'fridge' | 'freezer' | 'pantry';
-  expiryDate?: string;
-  addedDate: string;
-  image?: string;
-  user_id?: string;
-}
+import { PantryItemData } from '@/types/pantry';
 
 export function usePantry() {
   const [items, setItems] = useState<PantryItemData[]>([]);
@@ -53,7 +41,8 @@ export function usePantry() {
         expiryDate: item.expiry_date || undefined,
         addedDate: item.added_date || item.created_at,
         image: item.image_url || undefined,
-        user_id: item.user_id || undefined
+        user_id: item.user_id || undefined,
+        location: item.category
       }));
 
       setItems(mappedItems);
@@ -105,7 +94,8 @@ export function usePantry() {
         expiryDate: data.expiry_date || undefined,
         addedDate: data.added_date || data.created_at,
         image: data.image_url || undefined,
-        user_id: data.user_id
+        user_id: data.user_id,
+        location: data.category
       };
 
       setItems(prev => [mappedItem, ...prev]);

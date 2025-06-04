@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -9,7 +8,7 @@ import { ChefFilter } from '@/components/chef/ChefFilter';
 import ChefList from '@/components/chef/ChefList';
 import ChefBookingSidebar from '@/components/chef/ChefBookingSidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ChefCategory, ChefStyle } from '@/types/chef';
+import { ChefCategory, ChefStyle, Chef } from '@/types/chef';
 
 export interface Chef {
   id: string;
@@ -18,16 +17,18 @@ export interface Chef {
   rating: number;
   reviewCount: number;
   cuisine: string[];
-  price: number;
+  styles: string[];
+  hourlyRate: number;
   experience: number;
   availability: string[];
-  bio: string;
+  description: string;
   specialties: string[];
   languages: string[];
   location: string;
+  gallery: [];
 }
 
-// Mock chef data
+// Mock chef data that matches the Chef interface from types/chef.ts
 const mockChefs: Chef[] = [
   {
     id: '1',
@@ -36,13 +37,15 @@ const mockChefs: Chef[] = [
     rating: 4.9,
     reviewCount: 127,
     cuisine: ['Mexican', 'Spanish', 'Mediterranean'],
-    price: 150,
+    styles: ['Traditional', 'Modern'],
+    hourlyRate: 150,
     experience: 8,
     availability: ['weekends', 'evenings'],
-    bio: 'Professional chef with 8 years of experience in Mexican and Mediterranean cuisine.',
+    description: 'Professional chef with 8 years of experience in Mexican and Mediterranean cuisine.',
     specialties: ['Tacos', 'Paella', 'Authentic Mexican dishes'],
     languages: ['English', 'Spanish'],
-    location: 'Downtown'
+    location: 'Downtown',
+    gallery: []
   },
   {
     id: '2',
@@ -51,13 +54,15 @@ const mockChefs: Chef[] = [
     rating: 4.8,
     reviewCount: 89,
     cuisine: ['Italian', 'French'],
-    price: 180,
+    styles: ['Fine Dining', 'Traditional'],
+    hourlyRate: 180,
     experience: 12,
     availability: ['weekdays', 'weekends'],
-    bio: 'Expert in Italian and French cuisine with 12 years of professional experience.',
+    description: 'Expert in Italian and French cuisine with 12 years of professional experience.',
     specialties: ['Pasta', 'French pastries', 'Wine pairing'],
     languages: ['English', 'Italian', 'French'],
-    location: 'Midtown'
+    location: 'Midtown',
+    gallery: []
   }
 ];
 

@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Calendar, Minus, Plus, Trash2, MoreHorizontal, Snowflake, Archive, MoveVertical, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CustomListType } from '@/pages/PantryPage';
+import { CustomListType, PantryItemData } from '@/types/pantry';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChefHat, Sparkles, Heart, Clock, Users, Filter } from 'lucide-react';
@@ -23,6 +22,8 @@ const RecipesPage = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showGenerator, setShowGenerator] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState('');
 
   // Check if this is first visit
   useEffect(() => {
@@ -99,7 +100,25 @@ const RecipesPage = () => {
         </motion.section>
 
         <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-          <RecipeGeneratorContainer />
+          <RecipeGeneratorContainer 
+            showGenerator={showGenerator}
+            setShowGenerator={setShowGenerator}
+            selectedStyle={selectedStyle}
+            setSelectedStyle={setSelectedStyle}
+            selectedCuisine=""
+            setSelectedCuisine={() => {}}
+            selectedIngredients={[]}
+            setSelectedIngredients={() => {}}
+            selectedDifficulty=""
+            setSelectedDifficulty={() => {}}
+            selectedTime=""
+            setSelectedTime={() => {}}
+            selectedDiet=""
+            setSelectedDiet={() => {}}
+            isGenerating={false}
+            generatedRecipes={[]}
+            onGenerateRecipes={() => {}}
+          />
           
           <Card className="bg-white/80 backdrop-blur-sm shadow-lg">
             <CardHeader>

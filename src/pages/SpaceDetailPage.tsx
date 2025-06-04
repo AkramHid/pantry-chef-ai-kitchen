@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Search, Grid3X3, List, Filter } from 'lucide-react';
@@ -23,7 +22,7 @@ const SpaceDetailPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const space = spaces.find(s => s.id === spaceId);
-  const spaceItems = items.filter(item => item.location === space?.name);
+  const spaceItems = items.filter(item => item.category === space?.name);
   const filteredItems = spaceItems.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -142,6 +141,10 @@ const SpaceDetailPage = () => {
                 <PantryList 
                   items={filteredItems}
                   viewMode={viewMode}
+                  onIncrement={() => {}}
+                  onDecrement={() => {}}
+                  onDelete={() => {}}
+                  onAddNew={() => {}}
                 />
               )}
             </CardContent>

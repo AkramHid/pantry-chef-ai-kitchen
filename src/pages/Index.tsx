@@ -1,309 +1,203 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ShoppingBag, ChefHat, Users, Bell, Calendar, Heart, Camera, Search, Utensils } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sparkles, Utensils, ShoppingCart, Users, ChefHat } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { usePantry } from '@/hooks/use-pantry';
+import { useShoppingList } from '@/hooks/use-shopping-list';
+import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ActionTile from '@/components/home/ActionTile';
-import ChefTile from '@/components/home/ChefTile';
-import ExpiringSoonSection from '@/components/home/ExpiringSoonSection';
-import FloatingGrabAndGoButton from '@/components/home/FloatingGrabAndGoButton';
-import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { usePantry } from '@/hooks/use-pantry';
-import { useAuth } from '@/hooks/use-auth';
-import { useNotifications } from '@/hooks/use-notifications';
+import { format } from 'date-fns';
+import { PantryItemData } from '@/types/pantry';
 
-const Index = () => {
+const IndexPage = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { items } = usePantry();
+  const { shoppingList } = useShoppingList();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
-  const { items: pantryItems, isLoading: pantryLoading } = usePantry();
-  const { user } = useAuth();
-  const { unreadCount } = useNotifications();
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Show welcome message for new users
   useEffect(() => {
-    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
-    if (!hasSeenWelcome) {
-      toast({
-        title: "Welcome to Kitchen Assistant! 🍳",
-        description: "Manage your pantry, discover recipes, and more!",
-        duration: 5000,
-      });
-      localStorage.setItem('hasSeenWelcome', 'true');
-    }
-  }, [toast]);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
 
-  const handleTileClick = (path: string, requiresAuth: boolean = false) => {
-    if (requiresAuth && !user) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to access this feature',
-        variant: 'destructive',
-      });
-      return;
+    return () => clearInterval(timer);
+  }, []);
+
+  const greeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) {
+      return 'Good morning';
+    } else if (hour < 18) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
     }
-    navigate(path);
   };
 
-  const handleAddToPantry = () => {
-    if (!user) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to access your pantry',
-        variant: 'destructive',
-      });
-      return;
-    }
-    navigate('/pantry?action=add');
-  };
-
-  const quickActions = [
-    {
-      icon: Plus,
-      title: 'Add to Pantry',
-      subtitle: 'Quick add items',
-      path: '/pantry?action=add',
-      color: 'bg-green-500',
-      hoverColor: 'hover:bg-green-600',
-      onClick: handleAddToPantry,
-      requiresAuth: true
-    },
-    {
-      icon: Search,
-      title: 'Recipe Ideas',
-      subtitle: 'Find inspiration',
-      path: '/recipes',
-      color: 'bg-orange-500',
-      hoverColor: 'hover:bg-orange-600',
-      onClick: () => handleTileClick('/recipes'),
-      requiresAuth: false
-    },
-    {
-      icon: ShoppingBag,
-      title: 'Shopping List',
-      subtitle: 'Plan your shopping',
-      path: '/shopping-list',
-      color: 'bg-blue-500',
-      hoverColor: 'hover:bg-blue-600',
-      onClick: () => handleTileClick('/shopping-list', true),
-      requiresAuth: true
-    },
-    {
-      icon: Camera,
-      title: 'Grab & Go',
-      subtitle: 'Quick shopping mode',
-      path: '/grab-and-go',
-      color: 'bg-purple-500',
-      hoverColor: 'hover:bg-purple-600',
-      onClick: () => handleTileClick('/grab-and-go', true),
-      requiresAuth: true
-    }
-  ];
-
-  const mainFeatures = [
-    {
-      icon: Utensils,
-      title: 'My Pantry',
-      to: '/pantry',
-      variant: 'primary' as const,
-      requiresAuth: true
-    },
-    {
-      icon: ChefHat,
-      title: 'Recipe Ideas',
-      to: '/recipes',
-      variant: 'secondary' as const,
-      requiresAuth: false
-    },
-    {
-      icon: ShoppingBag,
-      title: 'Shopping Lists',
-      to: '/shopping-list',
-      variant: 'accent' as const,
-      requiresAuth: true
-    },
-    {
-      icon: Users,
-      title: 'Family Sharing',
-      to: '/family',
-      variant: 'primary' as const,
-      requiresAuth: true
-    }
-  ];
-
-  // Get expiring items for ExpiringSoonSection
-  const expiringSoonItems = pantryItems
-    .filter(item => {
-      if (!item.expiry_date) return false;
-      const expiryDate = new Date(item.expiry_date);
-      const today = new Date();
-      const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
-    })
-    .map(item => ({
-      id: item.id,
-      name: item.name,
-      daysLeft: Math.ceil((new Date(item.expiry_date!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
-      image: item.image_url
-    }))
-    .sort((a, b) => a.daysLeft - b.daysLeft);
+  // Calculate expiring soon items
+  const expiringSoonItems = items.filter(item => {
+    if (!item.expiryDate) return false;
+    const expiryDate = new Date(item.expiryDate);
+    const today = new Date();
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 7 && diffDays >= 0;
+  }).slice(0, 3).map(item => ({
+    id: item.id,
+    name: item.name,
+    expiryDate: item.expiryDate,
+    image: item.image || '/lovable-uploads/default-placeholder.jpg'
+  }));
 
   return (
-    <div className="min-h-screen bg-kitchen-cream">
-      <Header title="Kitchen Assistant" />
-      
-      <main className="pb-24">
-        {/* Hero Section */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-gradient-to-br from-kitchen-green via-kitchen-sage to-kitchen-blue text-white py-12 px-4"
-        >
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-3xl md:text-5xl font-bold mb-4"
-            >
-              Your Smart Kitchen Assistant
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-lg md:text-xl opacity-90 mb-8"
-            >
-              Manage your pantry, discover recipes, and make cooking effortless
-            </motion.p>
-            
-            {user && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
-                className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-2xl mx-auto"
-              >
-                {quickActions.map((action, index) => (
-                  <motion.div
-                    key={action.title}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.8 + index * 0.1, duration: 0.3 }}
-                  >
-                    <Button
-                      onClick={action.onClick}
-                      className={`${action.color} ${action.hoverColor} text-white h-auto py-3 px-4 flex flex-col items-center gap-2 w-full transition-all duration-200 hover:scale-105 shadow-lg`}
-                    >
-                      <action.icon size={isMobile ? 20 : 24} />
-                      <div className="text-center">
-                        <div className="font-medium text-xs md:text-sm">{action.title}</div>
-                        <div className="text-xs opacity-80">{action.subtitle}</div>
-                      </div>
-                    </Button>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-        </motion.section>
+    <div className="min-h-screen bg-kitchen-cream kitchen-texture flex flex-col">
+      <Header title="My Kitchen" />
 
-        {/* Expiring Soon Section - Only show if user is signed in */}
-        {user && !pantryLoading && expiringSoonItems.length > 0 && (
-          <motion.section 
+      <main className="flex-1 px-4 py-6 mb-16">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="px-4 py-6"
+            className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6"
           >
-            <ExpiringSoonSection items={expiringSoonItems} />
+            <h2 className="text-xl font-semibold mb-4 text-kitchen-dark">
+              {greeting()}, {user?.user_metadata?.full_name || 'User'}!
+            </h2>
+            <p className="text-muted-foreground">
+              Here's a snapshot of your kitchen activity.
+            </p>
           </motion.section>
-        )}
 
-        {/* Main Features */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="px-4 py-6"
-        >
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-kitchen-dark mb-6 text-center">
-              Kitchen Features
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mainFeatures.map((feature, index) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + index * 0.1, duration: 0.4 }}
-                  onClick={() => handleTileClick(feature.to, feature.requiresAuth)}
-                >
-                  <ActionTile
-                    icon={feature.icon}
-                    title={feature.title}
-                    to={feature.to}
-                    variant={feature.variant}
-                    className="hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
-                  />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.section>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.section
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Utensils className="w-5 h-5 text-kitchen-green" />
+                  <h3 className="font-semibold text-kitchen-dark">My Pantry</h3>
+                </div>
+                <Button variant="link" size="sm" onClick={() => navigate('/pantry')}>
+                  View All
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {items.length} items in your pantry
+              </p>
+            </motion.section>
 
-        {/* Chef Services */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="px-4 py-6"
-        >
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-kitchen-dark mb-6 text-center">
-              Professional Chef Services
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ChefTile />
-              <Card className="bg-white shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-kitchen-green" />
-                    Cooking Classes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">
-                    Learn new cooking techniques from professional chefs in hands-on classes.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => toast({
-                      title: "Coming Soon",
-                      description: "Cooking classes will be available soon!",
-                    })}
-                  >
-                    View Classes
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <motion.section
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-kitchen-blue" />
+                  <h3 className="font-semibold text-kitchen-dark">Shopping List</h3>
+                </div>
+                <Button variant="link" size="sm" onClick={() => navigate('/shopping-list')}>
+                  View All
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {shoppingList.length} items on your list
+              </p>
+            </motion.section>
           </div>
-        </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-kitchen-orange" />
+                <h3 className="font-semibold text-kitchen-dark">Expiring Soon</h3>
+              </div>
+              <Button variant="link" size="sm" onClick={() => navigate('/pantry')}>
+                View All
+              </Button>
+            </div>
+            {expiringSoonItems.length > 0 ? (
+              <ul className="space-y-3">
+                {expiringSoonItems.map(item => (
+                  <li key={item.id} className="flex items-center gap-3">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-10 h-10 rounded object-cover"
+                    />
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      {item.expiryDate && (
+                        <p className="text-sm text-muted-foreground">
+                          Expires {format(new Date(item.expiryDate), 'MMM dd, yyyy')}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No items expiring soon.
+              </p>
+            )}
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <ChefHat className="w-5 h-5 text-kitchen-berry" />
+                <h3 className="font-semibold text-kitchen-dark">Recipe Ideas</h3>
+              </div>
+              <Button variant="link" size="sm" onClick={() => navigate('/recipes')}>
+                Explore
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Discover new recipes based on your pantry ingredients.
+            </p>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-kitchen-wood" />
+                <h3 className="font-semibold text-kitchen-dark">Family Sharing</h3>
+              </div>
+              <Button variant="link" size="sm" onClick={() => navigate('/family')}>
+                Manage
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Share your kitchen and collaborate with family members.
+            </p>
+          </motion.section>
+        </div>
       </main>
 
-      <FloatingGrabAndGoButton />
       <Footer />
     </div>
   );
 };
 
-export default Index;
+export default IndexPage;

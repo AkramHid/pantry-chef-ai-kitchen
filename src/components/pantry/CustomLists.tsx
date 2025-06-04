@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PantryItemData } from './PantryItem';
-import { CustomListType } from '@/pages/PantryPage';
+import { CustomListType, PantryItemData } from '@/types/pantry';
 import { Plus, Edit, Trash2, X, Check, ListPlus } from 'lucide-react';
 import {
   Accordion,

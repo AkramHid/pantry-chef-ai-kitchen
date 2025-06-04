@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -15,8 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { usePantry } from '@/hooks/use-pantry';
 import { useAuth } from '@/hooks/use-auth';
 import { ViewMode } from '@/components/ui/list-layout';
-import { 
-  Dialog, 
+import { CustomListType } from '@/types/pantry';
+import { Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
@@ -33,6 +32,8 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+
+export { CustomListType };
 
 const formSchema = z.object({
   name: z.string().min(1, "Item name is required"),
@@ -103,7 +104,7 @@ const PantryPage = () => {
         name: values.name,
         quantity: values.quantity,
         unit: values.unit,
-        category: values.category,
+        category: values.category as "fridge" | "freezer" | "pantry",
         location: values.location as "fridge" | "freezer" | "pantry",
         expiry_date: values.expiry_date || undefined,
         note: values.note || undefined,
@@ -136,8 +137,8 @@ const PantryPage = () => {
   
   // Calculate expiring soon count
   const expiringSoonCount = items.filter(item => {
-    if (!item.expiry_date) return false;
-    const expiryDate = new Date(item.expiry_date);
+    if (!item.expiryDate) return false;
+    const expiryDate = new Date(item.expiryDate);
     const today = new Date();
     const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
@@ -349,6 +350,7 @@ const PantryPage = () => {
                   onDecrement={decrementQuantity}
                   onDelete={deleteItem}
                   onUpdate={updateItem}
+                  onAddNew={() => setIsAddDialogOpen(true)}
                 />
               )}
             </CardContent>

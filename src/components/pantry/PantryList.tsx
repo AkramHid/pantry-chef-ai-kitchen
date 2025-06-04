@@ -1,13 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
-import PantryItem, { PantryItemData } from './PantryItem';
+import PantryItem from './PantryItem';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Utensils, Snowflake, Archive, Clock, Plus, MoreHorizontal, Grid, List as ListIcon } from 'lucide-react';
-import { CustomListType } from '@/pages/PantryPage';
+import { CustomListType, PantryItemData } from '@/types/pantry';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ViewMode } from '@/components/ui/list-layout';
 
 interface PantryListProps {
   items: PantryItemData[];
@@ -20,6 +22,8 @@ interface PantryListProps {
   selectedItems?: string[];
   onToggleSelectItem?: (itemId: string, isSelected: boolean) => void;
   isLoading?: boolean;
+  viewMode?: ViewMode;
+  onUpdate?: (id: string, updates: Partial<PantryItemData>) => void;
 }
 
 const PantryList: React.FC<PantryListProps> = ({ 
