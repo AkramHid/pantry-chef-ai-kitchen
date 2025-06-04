@@ -5,25 +5,25 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 
 interface OnboardingScreenProps {
-  onboardingStep: number;
-  onboardingSteps: {
+  steps: {
     title: string;
     description: string;
     content: React.ReactNode;
   }[];
-  setOnboardingStep: (step: number) => void;
-  setShowOnboarding: (show: boolean) => void;
-  handleBack: () => void;
+  currentStep: number;
+  onNext: () => void;
+  onBack: () => void;
+  onComplete: () => void;
 }
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
-  onboardingStep,
-  onboardingSteps,
-  setOnboardingStep,
-  setShowOnboarding,
-  handleBack,
+  steps,
+  currentStep,
+  onNext,
+  onBack,
+  onComplete,
 }) => {
-  const step = onboardingSteps[onboardingStep];
+  const step = steps[currentStep];
 
   return (
     <div className="min-h-screen bg-kitchen-cream flex flex-col">
@@ -36,15 +36,24 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
           <h2 className="text-2xl font-bold text-center mb-2">{step.title}</h2>
           <p className="text-center text-gray-600 mb-4">{step.description}</p>
           <div>{step.content}</div>
-          {onboardingStep > 0 && (
+          
+          <div className="flex justify-between mt-6">
+            {currentStep > 0 && (
+              <Button
+                onClick={onBack}
+                variant="ghost"
+              >
+                Back
+              </Button>
+            )}
+            
             <Button
-              onClick={() => setOnboardingStep(onboardingStep - 1)}
-              variant="ghost"
-              className="mt-4"
+              onClick={currentStep === steps.length - 1 ? onComplete : onNext}
+              className="ml-auto"
             >
-              Back
+              {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}
             </Button>
-          )}
+          </div>
         </div>
       </main>
       <Footer />

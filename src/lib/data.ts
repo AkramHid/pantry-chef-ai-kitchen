@@ -1,4 +1,6 @@
 import { PantryItemData } from "@/types/pantry";
+import { RecipeData } from "@/types/recipe";
+import { ShoppingItemData } from "@/types/shopping";
 
 // Mock pantry data
 export const mockPantryItems: PantryItemData[] = [
