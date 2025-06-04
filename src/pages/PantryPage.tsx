@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Search, ListFilter, ShoppingCart, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import Header from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PantryList from '@/components/pantry/PantryList';
 import PantryActions from '@/components/pantry/PantryActions';
@@ -35,7 +35,7 @@ import {
 import CustomLists from '@/components/pantry/CustomLists';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ImageUploader from '@/components/pantry/ImageUploader';
-import { PantryItemData } from '@/components/pantry/PantryItem';
+import { PantryItemData } from '@/hooks/use-pantry';
 
 export type CustomListType = {
   id: string;
@@ -50,15 +50,16 @@ const PantryPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
   const {
-    pantryItems,
+    items: pantryItems,
     isLoading,
     selectedItems,
-    handleIncrement,
-    handleDecrement,
-    handleDelete,
-    handleAddNew,
-    handleSendToShopping,
-    handleToggleSelectItem
+    addItem,
+    updateItem,
+    deleteItem,
+    incrementQuantity,
+    decrementQuantity,
+    toggleSelectItem,
+    sendToShopping
   } = usePantry();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,7 +69,6 @@ const PantryPage = () => {
     quantity: 1,
     unit: 'piece',
     category: 'pantry',
-    addedDate: new Date().toISOString(),
   });
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -88,9 +88,6 @@ const PantryPage = () => {
       setSearchParams(new URLSearchParams());
     }
   }, [searchParams, setSearchParams]);
-
-  // Notification counter for demo purposes
-  const [notificationCount] = useState(3);
   
   const handleOpenAddDialog = () => {
     setAddItemDialogOpen(true);
@@ -99,7 +96,6 @@ const PantryPage = () => {
       quantity: 1,
       unit: 'piece',
       category: 'pantry',
-      addedDate: new Date().toISOString(),
     });
     setUploadedImage(null);
   };
@@ -132,7 +128,7 @@ const PantryPage = () => {
   };
   
   const handleSaveNewItem = () => {
-    handleAddNew(newItem);
+    addItem(newItem);
     setAddItemDialogOpen(false);
     
     // Reset new item form and uploaded image
@@ -141,7 +137,6 @@ const PantryPage = () => {
       quantity: 1,
       unit: 'piece',
       category: 'pantry',
-      addedDate: new Date().toISOString(),
     });
     setUploadedImage(null);
   };
@@ -239,10 +234,7 @@ const PantryPage = () => {
     <div className="min-h-screen bg-kitchen-cream flex flex-col">
       <Header 
         title="My Pantry" 
-        showSettings={true} 
-        showBack={true} 
-        onBack={handleBack}
-        notificationCount={notificationCount}
+        showBackButton={true}
       />
       
       <main className="flex-1 px-0 sm:px-4 py-4 sm:py-6 overflow-x-hidden">
@@ -280,7 +272,7 @@ const PantryPage = () => {
                 
                 <PantryActions 
                   onAddNew={handleOpenAddDialog} 
-                  onSendToShopping={() => handleSendToShopping(selectedItems)}
+                  onSendToShopping={() => sendToShopping(selectedItems)}
                   selectedItems={selectedItems}
                 />
               </CardContent>
@@ -316,14 +308,14 @@ const PantryPage = () => {
           >
             <PantryList
               items={filteredItems}
-              onIncrement={handleIncrement}
-              onDecrement={handleDecrement}
-              onDelete={handleDelete}
+              onIncrement={incrementQuantity}
+              onDecrement={decrementQuantity}
+              onDelete={deleteItem}
               onAddNew={handleOpenAddDialog}
               customLists={customLists}
               onAddToList={handleAddToList}
               selectedItems={selectedItems}
-              onToggleSelectItem={handleToggleSelectItem}
+              onToggleSelectItem={toggleSelectItem}
               isLoading={isLoading}
             />
           </motion.div>
@@ -409,7 +401,7 @@ const PantryPage = () => {
                 </Label>
                 <Select 
                   value={newItem.category || 'pantry'} 
-                  onValueChange={(value) => setNewItem({...newItem, category: value})}
+                  onValueChange={(value) => setNewItem({...newItem, category: value as 'fridge' | 'freezer' | 'pantry'})}
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select category" />

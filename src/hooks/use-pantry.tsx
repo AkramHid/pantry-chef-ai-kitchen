@@ -18,6 +18,7 @@ export interface PantryItemData {
 
 export function usePantry() {
   const [items, setItems] = useState<PantryItemData[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -100,7 +101,7 @@ export function usePantry() {
         name: data.name,
         quantity: data.quantity,
         unit: data.unit,
-        category: data.category,
+        category: data.category as 'fridge' | 'freezer' | 'pantry',
         expiryDate: data.expiry_date || undefined,
         addedDate: data.added_date || data.created_at,
         image: data.image_url || undefined,
@@ -204,14 +205,62 @@ export function usePantry() {
     }
   };
 
+  const toggleSelectItem = (id: string) => {
+    setSelectedItems(prev => 
+      prev.includes(id) 
+        ? prev.filter(itemId => itemId !== id)
+        : [...prev, id]
+    );
+  };
+
+  const sendToShopping = async (itemIds: string[]) => {
+    if (!user || itemIds.length === 0) return;
+
+    try {
+      const itemsToSend = items.filter(item => itemIds.includes(item.id));
+      
+      const shoppingItems = itemsToSend.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        category: 'General',
+        ischecked: false,
+        user_id: user.id
+      }));
+
+      const { error } = await supabase
+        .from('shopping_list')
+        .insert(shoppingItems);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Items sent to shopping list',
+        description: `${itemIds.length} items added to your shopping list`,
+      });
+
+      setSelectedItems([]);
+    } catch (error) {
+      console.error('Error sending items to shopping list:', error);
+      toast({
+        title: 'Error sending items',
+        description: 'Please try again',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return {
     items,
+    selectedItems,
     isLoading,
     addItem,
     updateItem,
     deleteItem,
     incrementQuantity,
     decrementQuantity,
+    toggleSelectItem,
+    sendToShopping,
     fetchItems
   };
 }

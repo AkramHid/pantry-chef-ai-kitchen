@@ -1,6 +1,6 @@
 
 import React from 'react';
-import Header from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 
@@ -29,9 +29,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
     <div className="min-h-screen bg-kitchen-cream flex flex-col">
       <Header
         title="Welcome to Recipe Ideas"
-        showSettings={false}
-        showBack={true}
-        onBack={handleBack}
+        showBackButton={true}
       />
       <main className="flex-1 px-4 py-6 flex flex-col items-center justify-center">
         <div className="max-w-lg w-full bg-white rounded-lg shadow p-6">

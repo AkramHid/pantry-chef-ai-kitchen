@@ -1,6 +1,6 @@
 
 import React from 'react';
-import Header from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -21,9 +21,7 @@ const ShoppingListLayout: React.FC<ShoppingListLayoutProps> = ({
     <div className="min-h-screen bg-kitchen-cream flex flex-col">
       <Header 
         title={title} 
-        showSettings={false} 
-        showBack={true} 
-        onBack={onBack} 
+        showBackButton={true}
       />
       
       <main className="flex-1 px-3 md:px-4 py-4 md:py-6 mx-auto w-full max-w-4xl">

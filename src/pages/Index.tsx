@@ -1,228 +1,299 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import ActionTile from "@/components/home/ActionTile";
-import ExpiringSoonSection from "@/components/home/ExpiringSoonSection";
-import ChefTile from "@/components/home/ChefTile";
-import FloatingGrabAndGoButton from "@/components/home/FloatingGrabAndGoButton";
-import { AuthDialog } from "@/components/auth/AuthDialog";
-import { useAuth } from "@/hooks/use-auth";
-import { useNotifications } from "@/hooks/use-notifications";
-import {
-  UtensilsCrossed,
-  Package,
-  ShoppingCart,
-  ChefHat,
-  Users,
-  Calendar,
-  CreditCard,
-  Gift,
-  Home as HomeIcon,
-} from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, ShoppingBag, ChefHat, Users, Bell, Calendar, Heart, Camera, Search, Utensils } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Header } from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import ActionTile from '@/components/home/ActionTile';
+import ChefTile from '@/components/home/ChefTile';
+import ExpiringSoonSection from '@/components/home/ExpiringSoonSection';
+import FloatingGrabAndGoButton from '@/components/home/FloatingGrabAndGoButton';
+import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { usePantry } from '@/hooks/use-pantry';
+import { useAuth } from '@/hooks/use-auth';
+import { useNotifications } from '@/hooks/use-notifications';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const { items: pantryItems, isLoading: pantryLoading } = usePantry();
   const { user } = useAuth();
-  const { createNotification } = useNotifications();
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const { unreadCount } = useNotifications();
 
-  const handleNavigateWithAuth = (path: string, requiresAuth = true) => {
+  // Show welcome message for new users
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    if (!hasSeenWelcome) {
+      toast({
+        title: "Welcome to Kitchen Assistant! 🍳",
+        description: "Manage your pantry, discover recipes, and more!",
+        duration: 5000,
+      });
+      localStorage.setItem('hasSeenWelcome', 'true');
+    }
+  }, [toast]);
+
+  const handleTileClick = (path: string, requiresAuth: boolean = false) => {
     if (requiresAuth && !user) {
-      setShowAuthDialog(true);
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to access this feature',
+        variant: 'destructive',
+      });
       return;
     }
     navigate(path);
   };
 
-  // Mock data for expiring items - in a real app this would come from the database
-  const expiringItems = user ? [
-    { id: '1', name: 'Milk', daysLeft: 1, image: undefined },
-    { id: '2', name: 'Bread', daysLeft: 2, image: undefined },
-    { id: '3', name: 'Yogurt', daysLeft: 3, image: undefined },
-  ] : [];
+  const handleAddToPantry = () => {
+    if (!user) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to access your pantry',
+        variant: 'destructive',
+      });
+      return;
+    }
+    navigate('/pantry?action=add');
+  };
 
-  const tiles = [
+  const quickActions = [
     {
-      icon: UtensilsCrossed,
-      title: "Recipes",
-      description: "AI-powered recipe suggestions based on your pantry",
-      bgColor: "bg-gradient-to-br from-orange-400 to-red-500",
-      path: "/recipes",
-      requiresAuth: false
-    },
-    {
-      icon: Package,
-      title: "My Pantry",
-      description: "Track your ingredients and expiration dates",
-      bgColor: "bg-gradient-to-br from-green-400 to-emerald-600",
-      path: "/pantry",
+      icon: Plus,
+      title: 'Add to Pantry',
+      subtitle: 'Quick add items',
+      path: '/pantry?action=add',
+      color: 'bg-green-500',
+      hoverColor: 'hover:bg-green-600',
+      onClick: handleAddToPantry,
       requiresAuth: true
     },
     {
-      icon: ShoppingCart,
-      title: "Shopping List",
-      description: "Smart shopping lists with store optimization",
-      bgColor: "bg-gradient-to-br from-blue-400 to-indigo-600",
-      path: "/shopping-list",
+      icon: Search,
+      title: 'Recipe Ideas',
+      subtitle: 'Find inspiration',
+      path: '/recipes',
+      color: 'bg-orange-500',
+      hoverColor: 'hover:bg-orange-600',
+      onClick: () => handleTileClick('/recipes'),
+      requiresAuth: false
+    },
+    {
+      icon: ShoppingBag,
+      title: 'Shopping List',
+      subtitle: 'Plan your shopping',
+      path: '/shopping-list',
+      color: 'bg-blue-500',
+      hoverColor: 'hover:bg-blue-600',
+      onClick: () => handleTileClick('/shopping-list', true),
+      requiresAuth: true
+    },
+    {
+      icon: Camera,
+      title: 'Grab & Go',
+      subtitle: 'Quick shopping mode',
+      path: '/grab-and-go',
+      color: 'bg-purple-500',
+      hoverColor: 'hover:bg-purple-600',
+      onClick: () => handleTileClick('/grab-and-go', true),
+      requiresAuth: true
+    }
+  ];
+
+  const mainFeatures = [
+    {
+      icon: Utensils,
+      title: 'My Pantry',
+      subtitle: 'Track your ingredients',
+      path: '/pantry',
+      color: 'bg-kitchen-green',
+      textColor: 'text-white',
       requiresAuth: true
     },
     {
       icon: ChefHat,
-      title: "Rent a Chef",
-      description: "Book professional chefs for home cooking",
-      bgColor: "bg-gradient-to-br from-purple-400 to-pink-500",
-      path: "/rent-chef",
+      title: 'Recipe Ideas',
+      subtitle: 'AI-powered suggestions',
+      path: '/recipes',
+      color: 'bg-kitchen-orange',
+      textColor: 'text-white',
       requiresAuth: false
     },
     {
-      icon: HomeIcon,
-      title: "Spaces",
-      description: "Organize your kitchen spaces efficiently",
-      bgColor: "bg-gradient-to-br from-teal-400 to-cyan-500",
-      path: "/spaces",
+      icon: ShoppingBag,
+      title: 'Shopping Lists',
+      subtitle: 'Organize your shopping',
+      path: '/shopping-list',
+      color: 'bg-kitchen-blue',
+      textColor: 'text-white',
       requiresAuth: true
     },
     {
       icon: Users,
-      title: "Family",
-      description: "Share lists and coordinate with family",
-      bgColor: "bg-gradient-to-br from-yellow-400 to-orange-500",
-      path: "/family",
-      requiresAuth: true
-    },
-    {
-      icon: CreditCard,
-      title: "Loyalty Cards",
-      description: "Manage your store loyalty cards digitally",
-      bgColor: "bg-gradient-to-br from-indigo-400 to-purple-500",
-      path: "/loyalty-cards",
-      requiresAuth: true
-    },
-    {
-      icon: Gift,
-      title: "Refer Friends",
-      description: "Invite friends and earn rewards",
-      bgColor: "bg-gradient-to-br from-pink-400 to-rose-500",
-      path: "/refer",
-      requiresAuth: true
-    },
+      title: 'Family Sharing',
+      subtitle: 'Share with family',
+      path: '/family',
+      color: 'bg-kitchen-berry',
+      textColor: 'text-white',
+      requiresAuth: true,
+      disabled: true
+    }
   ];
 
-  // Show a welcome notification for new users
-  React.useEffect(() => {
-    if (user && createNotification) {
-      // Check if it's a returning user or new user
-      const hasSeenWelcome = localStorage.getItem(`welcome_${user.id}`);
-      if (!hasSeenWelcome) {
-        createNotification({
-          title: 'Welcome to Kitchen Assistant!',
-          message: 'Start by adding items to your pantry or creating your first shopping list.',
-          type: 'system',
-          action_url: '/pantry',
-          metadata: { isWelcome: true }
-        });
-        localStorage.setItem(`welcome_${user.id}`, 'true');
-      }
-    }
-  }, [user, createNotification]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-kitchen-cream via-white to-kitchen-cream">
+    <div className="min-h-screen bg-kitchen-cream">
       <Header title="Kitchen Assistant" />
       
-      <main className="pb-20">
+      <main className="pb-24">
         {/* Hero Section */}
-        <motion.section
+        <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="px-4 py-8 md:py-12 text-center"
+          className="bg-gradient-to-br from-kitchen-green via-kitchen-sage to-kitchen-blue text-white py-12 px-4"
         >
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-kitchen-dark mb-4 md:mb-6">
-              Your Smart
-              <span className="text-kitchen-green block md:inline md:ml-3">
-                Kitchen Assistant
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Organize your pantry, plan meals with AI, and streamline your cooking experience
-            </p>
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-3xl md:text-5xl font-bold mb-4"
+            >
+              Your Smart Kitchen Assistant
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-lg md:text-xl opacity-90 mb-8"
+            >
+              Manage your pantry, discover recipes, and make cooking effortless
+            </motion.p>
             
-            {!user && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
+            {user && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-kitchen-green/10 border border-kitchen-green/20 rounded-lg p-4 mb-8 max-w-md mx-auto"
+                transition={{ delay: 0.6, duration: 0.6 }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-2xl mx-auto"
               >
-                <p className="text-kitchen-green font-medium">
-                  Sign in to sync your data across devices and unlock all features!
-                </p>
+                {quickActions.map((action, index) => (
+                  <motion.div
+                    key={action.title}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.8 + index * 0.1, duration: 0.3 }}
+                  >
+                    <Button
+                      onClick={action.onClick}
+                      className={`${action.color} ${action.hoverColor} text-white h-auto py-3 px-4 flex flex-col items-center gap-2 w-full transition-all duration-200 hover:scale-105 shadow-lg`}
+                    >
+                      <action.icon size={isMobile ? 20 : 24} />
+                      <div className="text-center">
+                        <div className="font-medium text-xs md:text-sm">{action.title}</div>
+                        <div className="text-xs opacity-80">{action.subtitle}</div>
+                      </div>
+                    </Button>
+                  </motion.div>
+                ))}
               </motion.div>
             )}
           </div>
         </motion.section>
 
-        {/* Expiring Soon Section - Only show for authenticated users */}
-        {user && expiringItems.length > 0 && (
-          <section className="px-4 mb-8">
-            <div className="max-w-6xl mx-auto">
-              <ExpiringSoonSection items={expiringItems} />
-            </div>
-          </section>
+        {/* Expiring Soon Section - Only show if user is signed in */}
+        {user && !pantryLoading && pantryItems.length > 0 && (
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="px-4 py-6"
+          >
+            <ExpiringSoonSection />
+          </motion.section>
         )}
 
-        {/* Main Features Grid */}
-        <section className="px-4 mb-8">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
-            >
-              {tiles.map((tile, index) => (
+        {/* Main Features */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          className="px-4 py-6"
+        >
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-kitchen-dark mb-6 text-center">
+              Kitchen Features
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {mainFeatures.map((feature, index) => (
                 <motion.div
-                  key={tile.title}
+                  key={feature.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index, duration: 0.4 }}
+                  transition={{ delay: 0.6 + index * 0.1, duration: 0.4 }}
                 >
                   <ActionTile
-                    icon={tile.icon}
-                    title={tile.title}
-                    description={tile.description}
-                    bgColor={tile.bgColor}
-                    onClick={() => handleNavigateWithAuth(tile.path, tile.requiresAuth)}
-                    disabled={tile.requiresAuth && !user}
+                    icon={feature.icon}
+                    title={feature.title}
+                    subtitle={feature.subtitle}
+                    onClick={() => handleTileClick(feature.path, feature.requiresAuth)}
+                    className={`${feature.color} ${feature.textColor} hover:scale-105 transition-all duration-200 shadow-lg`}
+                    disabled={feature.disabled}
                   />
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           </div>
-        </section>
+        </motion.section>
 
-        {/* Chef Spotlight */}
-        <section className="px-4">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
+        {/* Chef Services */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="px-4 py-6"
+        >
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-kitchen-dark mb-6 text-center">
+              Professional Chef Services
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ChefTile />
-            </motion.div>
+              <Card className="bg-white shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-kitchen-green" />
+                    Cooking Classes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Learn new cooking techniques from professional chefs in hands-on classes.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => toast({
+                      title: "Coming Soon",
+                      description: "Cooking classes will be available soon!",
+                    })}
+                  >
+                    View Classes
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </section>
+        </motion.section>
       </main>
 
-      <Footer />
       <FloatingGrabAndGoButton />
-      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
+      <Footer />
     </div>
   );
 };
