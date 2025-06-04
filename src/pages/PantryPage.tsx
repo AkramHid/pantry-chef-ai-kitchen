@@ -33,7 +33,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
-export { CustomListType };
+export type { CustomListType };
 
 const formSchema = z.object({
   name: z.string().min(1, "Item name is required"),
@@ -41,7 +41,7 @@ const formSchema = z.object({
   unit: z.string().default("pc"),
   category: z.string().default("General"),
   location: z.string().default("pantry"),
-  expiry_date: z.string().optional(),
+  expiryDate: z.string().optional(),
   note: z.string().optional(),
 });
 
@@ -74,7 +74,7 @@ const PantryPage = () => {
       unit: "pc",
       category: "General",
       location: "pantry",
-      expiry_date: "",
+      expiryDate: "",
       note: "",
     },
   });
@@ -105,9 +105,7 @@ const PantryPage = () => {
         quantity: values.quantity,
         unit: values.unit,
         category: values.category as "fridge" | "freezer" | "pantry",
-        location: values.location as "fridge" | "freezer" | "pantry",
-        expiry_date: values.expiry_date || undefined,
-        note: values.note || undefined,
+        expiryDate: values.expiryDate || undefined,
       });
       
       form.reset();
@@ -239,7 +237,7 @@ const PantryPage = () => {
                     
                     <FormField
                       control={form.control}
-                      name="expiry_date"
+                      name="expiryDate"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Expiry Date (Optional)</FormLabel>
@@ -345,11 +343,9 @@ const PantryPage = () => {
               ) : (
                 <PantryList
                   items={filteredItems}
-                  viewMode={viewMode}
                   onIncrement={incrementQuantity}
                   onDecrement={decrementQuantity}
                   onDelete={deleteItem}
-                  onUpdate={updateItem}
                   onAddNew={() => setIsAddDialogOpen(true)}
                 />
               )}

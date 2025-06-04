@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Minus, Plus, Trash2, MoreHorizontal, Snowflake, Archive, MoveVertical, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,17 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-export interface PantryItemData {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  category: string;
-  expiryDate?: string;
-  addedDate: string;
-  image?: string;
-}
 
 interface PantryItemProps {
   item: PantryItemData;

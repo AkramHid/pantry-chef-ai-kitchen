@@ -17,7 +17,7 @@ const IndexPage = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { items } = usePantry();
-  const { shoppingList } = useShoppingList();
+  const { shoppingItems } = useShoppingList();
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -109,7 +109,7 @@ const IndexPage = () => {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                {shoppingList.length} items on your list
+                {shoppingItems.length} items on your list
               </p>
             </motion.section>
           </div>

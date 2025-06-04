@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,24 +11,6 @@ import ChefBookingSidebar from '@/components/chef/ChefBookingSidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChefCategory, ChefStyle, Chef } from '@/types/chef';
 
-export interface Chef {
-  id: string;
-  name: string;
-  image: string;
-  rating: number;
-  reviewCount: number;
-  cuisine: string[];
-  styles: string[];
-  hourlyRate: number;
-  experience: number;
-  availability: string[];
-  description: string;
-  specialties: string[];
-  languages: string[];
-  location: string;
-  gallery: [];
-}
-
 // Mock chef data that matches the Chef interface from types/chef.ts
 const mockChefs: Chef[] = [
   {
@@ -36,13 +19,13 @@ const mockChefs: Chef[] = [
     image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400',
     rating: 4.9,
     reviewCount: 127,
-    cuisine: ['Mexican', 'Spanish', 'Mediterranean'],
-    styles: ['Traditional', 'Modern'],
+    categories: ['mexican', 'spanish', 'mediterranean'],
+    styles: ['traditional', 'modern'],
     hourlyRate: 150,
     experience: 8,
     availability: ['weekends', 'evenings'],
     description: 'Professional chef with 8 years of experience in Mexican and Mediterranean cuisine.',
-    specialties: ['Tacos', 'Paella', 'Authentic Mexican dishes'],
+    specialties: ['tacos', 'paella', 'mexican'],
     languages: ['English', 'Spanish'],
     location: 'Downtown',
     gallery: []
@@ -53,13 +36,13 @@ const mockChefs: Chef[] = [
     image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400',
     rating: 4.8,
     reviewCount: 89,
-    cuisine: ['Italian', 'French'],
-    styles: ['Fine Dining', 'Traditional'],
+    categories: ['italian', 'french'],
+    styles: ['fine-dining', 'traditional'],
     hourlyRate: 180,
     experience: 12,
     availability: ['weekdays', 'weekends'],
     description: 'Expert in Italian and French cuisine with 12 years of professional experience.',
-    specialties: ['Pasta', 'French pastries', 'Wine pairing'],
+    specialties: ['pasta', 'pastries', 'wine'],
     languages: ['English', 'Italian', 'French'],
     location: 'Midtown',
     gallery: []
@@ -82,8 +65,8 @@ const RentChefPage = () => {
   };
 
   const filteredChefs = mockChefs.filter((chef) => {
-    const matchesCategory = selectedCategory === 'all' || true; // Simplified for now
-    const matchesStyle = selectedStyle === 'all' || chef.cuisine.some(c => c === selectedStyle);
+    const matchesCategory = selectedCategory === 'all' || chef.categories.includes(selectedCategory);
+    const matchesStyle = selectedStyle === 'all' || chef.styles.includes(selectedStyle);
     return matchesCategory && matchesStyle;
   });
 

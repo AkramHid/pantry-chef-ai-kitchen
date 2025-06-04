@@ -16,5 +16,4 @@ export interface PantryItemData {
   addedDate: string;
   image?: string;
   user_id?: string;
-  location?: string;
 }

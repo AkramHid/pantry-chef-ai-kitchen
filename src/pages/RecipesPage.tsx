@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChefHat, Sparkles, Heart, Clock, Users, Filter } from 'lucide-react';
@@ -10,9 +11,26 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import RecipeGeneratorContainer from '@/components/recipes/RecipeGeneratorContainer';
 import OnboardingScreen from '@/components/recipes/OnboardingScreen';
-import { onboardingSteps } from '@/components/recipes/OnboardingSteps';
 import RecipeSplashScreen from '@/components/recipes/RecipeSplashScreen';
 import { useToast } from '@/hooks/use-toast';
+
+const onboardingSteps = [
+  {
+    title: "Welcome to Recipe Ideas!",
+    description: "Discover amazing recipes based on what you have in your pantry.",
+    image: "/lovable-uploads/recipes-welcome.jpg"
+  },
+  {
+    title: "AI-Powered Suggestions",
+    description: "Our AI creates personalized recipes from your ingredients.",
+    image: "/lovable-uploads/ai-recipes.jpg"
+  },
+  {
+    title: "Save Your Favorites",
+    description: "Keep track of recipes you love for easy access later.",
+    image: "/lovable-uploads/favorite-recipes.jpg"
+  }
+];
 
 const RecipesPage = () => {
   const navigate = useNavigate();
@@ -56,7 +74,7 @@ const RecipesPage = () => {
   };
 
   if (showSplash) {
-    return <RecipeSplashScreen onComplete={handleSplashComplete} />;
+    return <RecipeSplashScreen />;
   }
 
   if (showOnboarding) {
@@ -105,8 +123,6 @@ const RecipesPage = () => {
             setShowGenerator={setShowGenerator}
             selectedStyle={selectedStyle}
             setSelectedStyle={setSelectedStyle}
-            selectedCuisine=""
-            setSelectedCuisine={() => {}}
             selectedIngredients={[]}
             setSelectedIngredients={() => {}}
             selectedDifficulty=""
