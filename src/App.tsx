@@ -8,6 +8,7 @@ import { useOffline } from "@/hooks/use-offline";
 import { AuthProvider } from "@/hooks/use-auth";
 import OfflineIndicator from "@/components/layout/OfflineIndicator";
 import SplashScreen from "@/components/onboarding/SplashScreen";
+import IntelligentOnboarding from "@/components/onboarding/IntelligentOnboarding";
 import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import PantryPage from "./pages/PantryPage";
@@ -42,12 +43,20 @@ const AppContent = () => {
   const { isOnline } = useOffline();
   const [showSplash, setShowSplash] = useState(true);
   const [hasSeenSplash, setHasSeenSplash] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const hasSeenSplashBefore = localStorage.getItem('hasSeenSplash');
+    const hasCompletedOnboarding = localStorage.getItem('pantryChef_onboardingComplete');
+    
     if (hasSeenSplashBefore) {
       setShowSplash(false);
       setHasSeenSplash(true);
+      
+      // Show onboarding if user hasn't completed it yet
+      if (!hasCompletedOnboarding) {
+        setShowOnboarding(true);
+      }
     }
   }, []);
 
@@ -55,10 +64,35 @@ const AppContent = () => {
     localStorage.setItem('hasSeenSplash', 'true');
     setShowSplash(false);
     setHasSeenSplash(true);
+    
+    // Check if user needs onboarding
+    const hasCompletedOnboarding = localStorage.getItem('pantryChef_onboardingComplete');
+    if (!hasCompletedOnboarding) {
+      setShowOnboarding(true);
+    }
+  };
+
+  const handleOnboardingComplete = (data: any) => {
+    console.log('Onboarding completed with data:', data);
+    setShowOnboarding(false);
+  };
+
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('pantryChef_onboardingComplete', 'true');
+    setShowOnboarding(false);
   };
 
   if (showSplash && !hasSeenSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
+  if (showOnboarding) {
+    return (
+      <IntelligentOnboarding
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
   }
 
   return (
