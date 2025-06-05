@@ -3,13 +3,18 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChefHat, Sparkles, Users, ShoppingCart } from 'lucide-react';
+import { OnboardingData } from '../IntelligentOnboarding';
 
 interface WelcomeStepProps {
+  data: OnboardingData;
+  onUpdateData: (section: keyof OnboardingData, data: any) => void;
   onNext: () => void;
+  onBack: () => void;
   isFirst: boolean;
+  isLast: boolean;
 }
 
-const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext, isFirst }) => {
+const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
   const features = [
     {
       icon: ChefHat,
