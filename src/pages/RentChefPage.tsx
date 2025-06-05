@@ -2,52 +2,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ChefPageHero from '@/components/chef/ChefPageHero';
 import { ChefFilter } from '@/components/chef/ChefFilter';
-import ChefList from '@/components/chef/ChefList';
 import ChefBookingSidebar from '@/components/chef/ChefBookingSidebar';
+import { SmartChefRecommendations } from '@/components/chef/SmartChefRecommendations';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ChefCategory, ChefStyle, Chef } from '@/types/chef';
-
-// Mock chef data that matches the Chef interface from types/chef.ts
-const mockChefs: Chef[] = [
-  {
-    id: '1',
-    name: 'Chef Maria Rodriguez',
-    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400',
-    rating: 4.9,
-    reviewCount: 127,
-    categories: ['mexican', 'spanish', 'mediterranean'],
-    styles: ['traditional', 'modern'],
-    hourlyRate: 150,
-    experience: 8,
-    availability: ['weekends', 'evenings'],
-    description: 'Professional chef with 8 years of experience in Mexican and Mediterranean cuisine.',
-    specialties: ['mexican', 'spanish', 'mediterranean'],
-    languages: ['English', 'Spanish'],
-    location: 'Downtown',
-    gallery: []
-  },
-  {
-    id: '2',
-    name: 'Chef James Wilson',
-    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400',
-    rating: 4.8,
-    reviewCount: 89,
-    categories: ['italian', 'french'],
-    styles: ['fine-dining', 'traditional'],
-    hourlyRate: 180,
-    experience: 12,
-    availability: ['weekdays', 'weekends'],
-    description: 'Expert in Italian and French cuisine with 12 years of professional experience.',
-    specialties: ['italian', 'french'],
-    languages: ['English', 'Italian', 'French'],
-    location: 'Midtown',
-    gallery: []
-  }
-];
+import { ChefCategory, ChefStyle, Chef, ChefMatchingCriteria } from '@/types/chef';
+import { CHEFS } from '@/data/chefData';
 
 const RentChefPage = () => {
   const navigate = useNavigate();
@@ -57,6 +20,20 @@ const RentChefPage = () => {
   const [selectedStyle, setSelectedStyle] = useState<ChefStyle>('all');
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Smart matching criteria
+  const [matchingCriteria, setMatchingCriteria] = useState<ChefMatchingCriteria>({
+    dietaryRestrictions: [],
+    budgetRange: { min: 50, max: 500 },
+    eventType: 'family',
+    eventSize: 4,
+    preferredCuisines: [],
+    date: new Date().toISOString().split('T')[0],
+    timeSlot: 'evening',
+    pantryIngredients: [],
+    previousChefs: []
+  });
 
   const handleChefSelect = (chef: Chef) => {
     setSelectedChef(chef);
@@ -66,7 +43,11 @@ const RentChefPage = () => {
     setSelectedChef(null);
   };
 
-  const filteredChefs = mockChefs.filter((chef) => {
+  const handleUpdateCriteria = (newCriteria: ChefMatchingCriteria) => {
+    setMatchingCriteria(newCriteria);
+  };
+
+  const filteredChefs = CHEFS.filter((chef) => {
     const matchesCategory = selectedCategory === 'all' || chef.categories.includes(selectedCategory);
     const matchesStyle = selectedStyle === 'all' || chef.styles.includes(selectedStyle);
     return matchesCategory && matchesStyle;
@@ -78,69 +59,121 @@ const RentChefPage = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white shadow-sm px-4 py-3 flex items-center md:hidden"
+        className="bg-white shadow-sm px-4 py-3 flex items-center justify-between md:hidden"
       >
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="mr-3"
+          >
+            <ArrowLeft size={20} />
+          </Button>
+          <h1 className="text-xl font-bold">Rent a Chef</h1>
+        </div>
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/')}
-          className="mr-3"
+          onClick={() => setShowFilters(!showFilters)}
         >
-          <ArrowLeft size={20} />
+          <Settings size={20} />
         </Button>
-        <h1 className="text-xl font-bold">Rent a Chef</h1>
       </motion.div>
 
       {/* Desktop Header */}
       <div className="hidden md:block">
         <ChefPageHero 
-          title="Rent a Chef"
-          subtitle="Professional chefs available for your events and daily cooking needs"
+          title="Rent a Chef - AI Powered Matching"
+          subtitle="Our intelligent system finds the perfect chef for your needs, budget, and preferences"
         />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-4 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8">
           {/* Filters Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-4">
+          <div className={`lg:col-span-1 ${showFilters || !isMobile ? 'block' : 'hidden'}`}>
+            <div className="sticky top-4 space-y-4">
               <ChefFilter
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
                 selectedStyle={selectedStyle}
                 onStyleChange={setSelectedStyle}
               />
+              
+              {/* Smart Matching Criteria */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-white rounded-lg p-4 shadow-sm border"
+              >
+                <h3 className="font-semibold mb-3 text-kitchen-dark">Smart Matching</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Budget Range</label>
+                    <div className="flex gap-2 mt-1">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        value={matchingCriteria.budgetRange.min}
+                        onChange={(e) => setMatchingCriteria({
+                          ...matchingCriteria,
+                          budgetRange: { ...matchingCriteria.budgetRange, min: Number(e.target.value) }
+                        })}
+                        className="w-full px-2 py-1 border rounded text-sm"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={matchingCriteria.budgetRange.max}
+                        onChange={(e) => setMatchingCriteria({
+                          ...matchingCriteria,
+                          budgetRange: { ...matchingCriteria.budgetRange, max: Number(e.target.value) }
+                        })}
+                        className="w-full px-2 py-1 border rounded text-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Event Type</label>
+                    <select
+                      value={matchingCriteria.eventType}
+                      onChange={(e) => setMatchingCriteria({ ...matchingCriteria, eventType: e.target.value })}
+                      className="w-full px-2 py-1 border rounded text-sm mt-1"
+                    >
+                      <option value="family">Family Gathering</option>
+                      <option value="corporate">Corporate Event</option>
+                      <option value="luxury">Luxury Event</option>
+                      <option value="casual">Casual Dining</option>
+                      <option value="wedding">Wedding</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Party Size</label>
+                    <input
+                      type="number"
+                      value={matchingCriteria.eventSize}
+                      onChange={(e) => setMatchingCriteria({ ...matchingCriteria, eventSize: Number(e.target.value) })}
+                      className="w-full px-2 py-1 border rounded text-sm mt-1"
+                      min="1"
+                      max="50"
+                    />
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
 
           {/* Main Content */}
           <div className={`${selectedChef && !isMobile ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="mb-4 md:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-                    Available Chefs
-                  </h2>
-                  <p className="text-gray-600 mt-1">
-                    {filteredChefs.length} chef{filteredChefs.length !== 1 ? 's' : ''} available
-                  </p>
-                </div>
-              </div>
-
-              <ChefList
-                chefs={filteredChefs}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                selectedStyle={selectedStyle}
-                setSelectedStyle={setSelectedStyle}
-                onBookNow={handleChefSelect}
-                onViewGallery={handleChefSelect}
-              />
-            </motion.div>
+            <SmartChefRecommendations
+              chefs={filteredChefs}
+              criteria={matchingCriteria}
+              onChefSelect={handleChefSelect}
+              onUpdateCriteria={handleUpdateCriteria}
+            />
           </div>
 
           {/* Booking Sidebar - Desktop Only */}

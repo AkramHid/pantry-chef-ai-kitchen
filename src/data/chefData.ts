@@ -1,138 +1,291 @@
 
-import { Chef } from '@/types/chef';
+import { Chef, ChefTier } from '@/types/chef';
 
-// Updated CHEFS array with all required properties
 export const CHEFS: Chef[] = [
   {
     id: '1',
-    name: 'Carla Rodriguez',
-    image: 'https://images.unsplash.com/photo-1583394550880-082575469405?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    rating: 4.8,
+    name: 'Chef Maria Rodriguez',
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400',
+    rating: 4.9,
     reviewCount: 127,
-    categories: ['breakfast', 'lunch', 'dinner'],
-    specialties: ['breakfast', 'lunch', 'dinner'],
-    styles: ['Mexican', 'Mediterranean'],
-    hourlyRate: 75,
+    categories: ['mexican', 'spanish', 'mediterranean'],
+    styles: ['traditional', 'modern'],
+    hourlyRate: 150,
     experience: 8,
     availability: ['weekends', 'evenings'],
-    location: 'New York, NY',
-    description: 'Experienced chef specializing in Mexican cuisine with a modern twist. I love creating authentic dishes that tell a story.',
+    description: 'Professional chef with 8 years of experience in Mexican and Mediterranean cuisine.',
+    specialties: ['mexican', 'spanish', 'mediterranean'],
     languages: ['English', 'Spanish'],
+    location: 'Downtown',
     gallery: [
-      'https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1551504734-5ee1c4a3479c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
-    ]
+      'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=600',
+      'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600'
+    ],
+    tier: 'professional',
+    certifications: [
+      {
+        id: 'cert-1',
+        name: 'Culinary Arts Degree',
+        issuer: 'Johnson & Wales University',
+        dateObtained: '2016-05-15',
+        verified: true
+      },
+      {
+        id: 'cert-2',
+        name: 'Mediterranean Cuisine Specialist',
+        issuer: 'Italian Culinary Institute',
+        dateObtained: '2018-08-20',
+        verified: true
+      }
+    ],
+    testimonials: [
+      {
+        id: 'test-1',
+        clientName: 'Sarah Johnson',
+        rating: 5,
+        comment: 'Maria created an unforgettable Spanish-themed dinner party for us!',
+        eventType: 'Private Dinner',
+        date: '2024-05-15',
+        verified: true
+      }
+    ],
+    signatureDishes: [
+      {
+        id: 'dish-1',
+        name: 'Paella Valenciana',
+        description: 'Traditional Spanish paella with saffron, seafood, and bomba rice',
+        images: ['https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=600'],
+        ingredients: ['bomba rice', 'saffron', 'seafood', 'vegetables'],
+        dietaryTags: ['gluten-free', 'pescatarian'],
+        preparationTime: 45,
+        difficulty: 'medium'
+      }
+    ],
+    serviceCount: 127,
+    satisfactionScore: 98,
+    peerRecommendations: 45,
+    brandPartnerships: ['Casa Bonita Restaurant', 'Spanish Cultural Center'],
+    specializations: ['Spanish Tapas', 'Mediterranean Seafood', 'Paella Mastery'],
+    sourcingPreferences: ['local', 'organic', 'sustainable seafood'],
+    culturalExpertise: ['Spanish', 'Catalan', 'Andalusian'],
+    availabilityCalendar: [],
+    basePricing: {
+      homeEvents: 150,
+      corporateEvents: 200,
+      privateEvents: 180,
+      mealPrep: 120
+    },
+    isDynamicPricing: true
   },
   {
     id: '2',
-    name: 'Jenny Chang',
-    image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    rating: 4.9,
+    name: 'Chef James Wilson',
+    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400',
+    rating: 4.8,
     reviewCount: 89,
-    categories: ['dinner', 'dessert'],
-    specialties: ['dinner', 'dessert'],
-    styles: ['Asian', 'Healthy'],
-    hourlyRate: 85,
+    categories: ['italian', 'french'],
+    styles: ['fine-dining', 'traditional'],
+    hourlyRate: 180,
     experience: 12,
-    availability: ['weekdays', 'evenings'],
-    location: 'Los Angeles, CA',
-    description: 'Specialized in fusion Asian cuisine with a healthy focus. My desserts combine Eastern and Western techniques for unique flavors.',
-    languages: ['English', 'Chinese'],
+    availability: ['weekdays', 'weekends'],
+    description: 'Expert in Italian and French cuisine with 12 years of professional experience.',
+    specialties: ['italian', 'french'],
+    languages: ['English', 'Italian', 'French'],
+    location: 'Midtown',
     gallery: [
-      'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1563245738-2e66f2ed75a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1574484184081-afea8a62f9c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
-    ]
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600',
+      'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600'
+    ],
+    tier: 'professional',
+    certifications: [
+      {
+        id: 'cert-3',
+        name: 'Le Cordon Bleu Certificate',
+        issuer: 'Le Cordon Bleu Paris',
+        dateObtained: '2012-06-10',
+        verified: true
+      }
+    ],
+    testimonials: [
+      {
+        id: 'test-2',
+        clientName: 'Michael Chen',
+        rating: 5,
+        comment: 'James delivered a Michelin-star quality experience in our home.',
+        eventType: 'Anniversary Dinner',
+        date: '2024-04-20',
+        verified: true
+      }
+    ],
+    signatureDishes: [
+      {
+        id: 'dish-2',
+        name: 'Osso Buco Milanese',
+        description: 'Braised veal shanks with saffron risotto and gremolata',
+        images: ['https://images.unsplash.com/photo-1555244162-803834f70033?w=600'],
+        ingredients: ['veal shanks', 'arborio rice', 'saffron', 'white wine'],
+        dietaryTags: ['gluten-free'],
+        preparationTime: 120,
+        difficulty: 'hard'
+      }
+    ],
+    serviceCount: 89,
+    satisfactionScore: 96,
+    peerRecommendations: 38,
+    brandPartnerships: ['Ristorante Italiano', 'French Bistro Union'],
+    specializations: ['Northern Italian', 'French Bistro', 'Wine Pairing'],
+    sourcingPreferences: ['local', 'artisanal', 'imported specialty'],
+    culturalExpertise: ['Milanese', 'Tuscan', 'Provence'],
+    availabilityCalendar: [],
+    basePricing: {
+      homeEvents: 180,
+      corporateEvents: 250,
+      privateEvents: 220,
+      mealPrep: 140
+    },
+    isDynamicPricing: true
   },
   {
     id: '3',
-    name: 'Marco Rossi',
-    image: 'https://images.unsplash.com/photo-1581299894007-aaa50297cf16?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    rating: 4.7,
-    reviewCount: 156,
-    categories: ['lunch', 'dinner'],
-    specialties: ['lunch', 'dinner'],
-    styles: ['Italian', 'Mediterranean'],
-    hourlyRate: 80,
+    name: 'Chef Marco Rossi',
+    image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400',
+    rating: 5.0,
+    reviewCount: 45,
+    categories: ['italian', 'mediterranean'],
+    styles: ['fine-dining', 'modern'],
+    hourlyRate: 350,
     experience: 15,
-    availability: ['weekdays', 'weekends'],
-    location: 'Chicago, IL',
-    description: 'Italian cuisine expert with 15+ years of experience. I bring authentic Italian flavors directly to your home.',
+    availability: ['weekends', 'special events'],
+    description: 'Elite private chef specializing in luxury dining experiences and yacht catering.',
+    specialties: ['italian', 'mediterranean'],
     languages: ['English', 'Italian'],
+    location: 'Harbor District',
     gallery: [
-      'https://images.unsplash.com/photo-1595295333158-4742f28fbd85?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1598866594230-a7c12756260f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1551183053-bf91a1d81141?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
-    ]
+      'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=600',
+      'https://images.unsplash.com/photo-1600803907087-f56d462fd26b?w=600',
+      'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600'
+    ],
+    tier: 'elite',
+    certifications: [
+      {
+        id: 'cert-4',
+        name: 'Elite Private Chef Certification',
+        issuer: 'International Private Chef Association',
+        dateObtained: '2019-03-15',
+        verified: true
+      },
+      {
+        id: 'cert-5',
+        name: 'Yacht Catering Specialist',
+        issuer: 'Maritime Culinary Institute',
+        dateObtained: '2020-07-22',
+        verified: true
+      }
+    ],
+    testimonials: [
+      {
+        id: 'test-3',
+        clientName: 'Anonymous Celebrity Client',
+        rating: 5,
+        comment: 'Marco transformed our yacht event into a culinary masterpiece.',
+        eventType: 'Private Yacht Event',
+        date: '2024-03-10',
+        verified: true,
+        isAnonymized: true
+      }
+    ],
+    signatureDishes: [
+      {
+        id: 'dish-3',
+        name: 'Truffle Risotto Oro',
+        description: 'Black truffle risotto with 24k gold flakes and aged Parmigiano',
+        images: ['https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=600'],
+        ingredients: ['carnaroli rice', 'black truffle', '24k gold', 'aged parmigiano'],
+        dietaryTags: ['vegetarian', 'luxury'],
+        preparationTime: 30,
+        difficulty: 'hard'
+      }
+    ],
+    serviceCount: 45,
+    satisfactionScore: 100,
+    peerRecommendations: 25,
+    industryAwards: ['James Beard Outstanding Chef Nominee', 'Private Chef of the Year 2023'],
+    specializations: ['Luxury Events', 'Yacht Catering', 'Molecular Gastronomy'],
+    sourcingPreferences: ['premium', 'exclusive suppliers', 'rare ingredients'],
+    culturalExpertise: ['Northern Italian', 'Modern European', 'Molecular'],
+    availabilityCalendar: [],
+    basePricing: {
+      homeEvents: 350,
+      corporateEvents: 500,
+      privateEvents: 450,
+      mealPrep: 280
+    },
+    isDynamicPricing: true
   },
   {
     id: '4',
-    name: 'Sofia Patel',
-    image: 'https://images.unsplash.com/photo-1556911073-38141963c9e0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    rating: 4.9,
-    reviewCount: 203,
-    categories: ['breakfast', 'lunch', 'event'],
-    specialties: ['breakfast', 'lunch', 'event'],
-    styles: ['Brunch', 'Meal Prep'],
-    hourlyRate: 70,
-    experience: 10,
-    availability: ['weekends', 'mornings'],
-    location: 'Boston, MA',
-    description: 'I specialize in brunch and meal preparation services. Perfect for busy families who want healthy, pre-planned meals.',
-    languages: ['English', 'Hindi'],
+    name: 'Chef Lisa Thompson',
+    image: 'https://images.unsplash.com/photo-1594736797933-d0c53aff7865?w=400',
+    rating: 4.3,
+    reviewCount: 23,
+    categories: ['breakfast', 'healthy'],
+    styles: ['modern', 'Healthy'],
+    hourlyRate: 85,
+    experience: 3,
+    availability: ['weekdays', 'mornings'],
+    description: 'Home chef specializing in healthy breakfast and meal prep options.',
+    specialties: ['breakfast', 'healthy'],
+    languages: ['English'],
+    location: 'Suburbs',
     gallery: [
-      'https://images.unsplash.com/photo-1590368755807-9b6a24eecc72?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1506084868230-bb9d95c24759?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1615937657715-bc7b4b7962c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1606756790138-261d2b21cd75?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
-    ]
-  },
-  {
-    id: '5',
-    name: 'David Kim',
-    image: 'https://images.unsplash.com/photo-1563991655280-cb95c90ca2fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    rating: 4.6,
-    reviewCount: 98,
-    categories: ['dinner', 'event'],
-    specialties: ['dinner', 'event'],
-    styles: ['Asian', 'Healthy'],
-    hourlyRate: 90,
-    experience: 14,
-    availability: ['evenings', 'weekends'],
-    location: 'Seattle, WA',
-    description: 'Experienced in catering events and private dinners. I create memorable dining experiences with a focus on healthy ingredients.',
-    languages: ['English', 'Korean'],
-    gallery: [
-      'https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1557872943-16a5ac26437e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1529042410759-befb1204b468?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
-    ]
-  },
-  {
-    id: '6',
-    name: 'Emma Wilson',
-    image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    rating: 5.0,
-    reviewCount: 142,
-    categories: ['dessert', 'breakfast'],
-    specialties: ['dessert', 'breakfast'],
-    styles: ['Brunch', 'Italian'],
-    hourlyRate: 65,
-    experience: 9,
-    availability: ['mornings', 'weekends'],
-    location: 'Denver, CO',
-    description: 'Pastry chef specialized in Italian desserts and breakfast pastries. I bring the taste of European bakeries to your home.',
-    languages: ['English', 'French'],
-    gallery: [
-      'https://images.unsplash.com/photo-1587314168485-3236d6710814?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1546554137-f86b9593a222?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1579372786545-666a77c4f321?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1619743358116-050db12c2fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
-    ]
+      'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=600'
+    ],
+    tier: 'home',
+    certifications: [
+      {
+        id: 'cert-6',
+        name: 'Nutrition and Culinary Arts',
+        issuer: 'Community College',
+        dateObtained: '2022-05-20',
+        verified: true
+      }
+    ],
+    testimonials: [
+      {
+        id: 'test-4',
+        clientName: 'Jennifer Williams',
+        rating: 4,
+        comment: 'Lisa helped us establish healthy eating habits for our family.',
+        eventType: 'Meal Prep Service',
+        date: '2024-01-15',
+        verified: true
+      }
+    ],
+    signatureDishes: [
+      {
+        id: 'dish-4',
+        name: 'Quinoa Power Bowl',
+        description: 'Nutritious quinoa bowl with seasonal vegetables and tahini dressing',
+        images: ['https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600'],
+        ingredients: ['quinoa', 'seasonal vegetables', 'tahini', 'hemp seeds'],
+        dietaryTags: ['vegan', 'gluten-free', 'high-protein'],
+        preparationTime: 25,
+        difficulty: 'easy'
+      }
+    ],
+    serviceCount: 23,
+    satisfactionScore: 86,
+    peerRecommendations: 8,
+    specializations: ['Healthy Meal Prep', 'Family Nutrition', 'Plant-Based Cooking'],
+    sourcingPreferences: ['organic', 'local', 'seasonal'],
+    culturalExpertise: ['Modern American', 'Mediterranean-inspired'],
+    availabilityCalendar: [],
+    basePricing: {
+      homeEvents: 85,
+      corporateEvents: 110,
+      privateEvents: 95,
+      mealPrep: 75
+    },
+    isDynamicPricing: false
   }
 ];
