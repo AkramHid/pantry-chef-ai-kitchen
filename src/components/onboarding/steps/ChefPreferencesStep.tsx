@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +10,8 @@ interface ChefPreferencesStepProps {
   onUpdateData: (section: keyof OnboardingData, data: any) => void;
   onNext: () => void;
   onBack: () => void;
+  isFirst: boolean;
+  isLast: boolean;
 }
 
 const ChefPreferencesStep: React.FC<ChefPreferencesStepProps> = ({
