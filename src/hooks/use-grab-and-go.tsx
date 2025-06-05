@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -137,6 +136,82 @@ export function useGrabAndGo() {
     }
   };
 
+  const handleUpdateItem = async (id: string, updates: Partial<ShoppingItemData>) => {
+    if (!user) return;
+    
+    try {
+      const updatedItem = { ...shoppingItems.find(item => item.id === id), ...updates };
+      
+      setShoppingItems(items =>
+        items.map(item =>
+          item.id === id ? { ...item, ...updates } : item
+        )
+      );
+      
+      const { error } = await supabase
+        .from('shopping_list')
+        .update({
+          name: updatedItem.name?.trim(),
+          quantity: Number(updatedItem.quantity) || 1,
+          unit: updatedItem.unit || 'pc',
+          category: updatedItem.category || 'General',
+          ischecked: updatedItem.isChecked || false,
+          note: updatedItem.note || null
+        })
+        .eq('id', id)
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Item updated successfully:', id);
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast({
+        title: 'Failed to update item',
+        description: 'Please try again',
+        variant: 'destructive',
+      });
+      
+      // Revert the optimistic update
+      fetchGrabAndGoItems();
+    }
+  };
+
+  const handleDeleteItems = async (itemIds: string[]) => {
+    if (!user || itemIds.length === 0) return;
+    
+    try {
+      // Optimistically remove items from state
+      setShoppingItems(items => items.filter(item => !itemIds.includes(item.id)));
+      
+      const { error } = await supabase
+        .from('shopping_list')
+        .delete()
+        .in('id', itemIds)
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Items deleted successfully:', itemIds);
+    } catch (error) {
+      console.error('Error deleting items:', error);
+      toast({
+        title: 'Failed to delete items',
+        description: 'Please try again',
+        variant: 'destructive',
+      });
+      
+      // Revert by refetching
+      fetchGrabAndGoItems();
+    }
+  };
+
   const handleImportFromList = async (listItems: ShoppingItemData[]) => {
     if (!user) {
       toast({
@@ -258,6 +333,8 @@ export function useGrabAndGo() {
     isLoading,
     handleToggle,
     handleImportFromList,
-    handleCreateShoppingList
+    handleCreateShoppingList,
+    handleUpdateItem,
+    handleDeleteItems
   };
 }

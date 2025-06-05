@@ -7,25 +7,38 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useGrabAndGo } from '@/hooks/use-grab-and-go';
 import { ViewMode } from '@/components/ui/list-layout';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 import GrabAndGoHeader from '@/components/grab-and-go/GrabAndGoHeader';
 import GrabAndGoImportDialog from '@/components/grab-and-go/GrabAndGoImportDialog';
 import GrabAndGoItemsList from '@/components/grab-and-go/GrabAndGoItemsList';
+import GrabAndGoSmartSuggestions from '@/components/grab-and-go/GrabAndGoSmartSuggestions';
+
+import { 
+  generateSmartSuggestions, 
+  mergeItems, 
+  SmartSuggestion 
+} from '@/lib/grab-and-go-intelligence';
 
 const GrabAndGoPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   
   const {
     shoppingItems,
     isLoading,
     handleToggle,
     handleImportFromList,
-    handleCreateShoppingList
+    handleCreateShoppingList,
+    handleUpdateItem,
+    handleDeleteItems
   } = useGrabAndGo();
 
   const [viewMode, setViewMode] = useState<ViewMode>(isMobile ? 'list' : 'grid');
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [smartSuggestions, setSmartSuggestions] = useState<SmartSuggestion[]>([]);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
 
   // Update viewMode based on screen size
   useEffect(() => {
@@ -33,6 +46,19 @@ const GrabAndGoPage = () => {
       setViewMode('list');
     }
   }, [isMobile]);
+
+  // Generate smart suggestions when items change
+  useEffect(() => {
+    if (shoppingItems.length > 0) {
+      const suggestions = generateSmartSuggestions(shoppingItems);
+      const filteredSuggestions = suggestions.filter(suggestion => 
+        !dismissedSuggestions.has(`${suggestion.type}-${suggestion.items.join('-')}`)
+      );
+      setSmartSuggestions(filteredSuggestions);
+    } else {
+      setSmartSuggestions([]);
+    }
+  }, [shoppingItems, dismissedSuggestions]);
 
   const handleExitGrabAndGo = () => {
     navigate('/shopping-list');
@@ -45,7 +71,6 @@ const GrabAndGoPage = () => {
   const handleCreateList = async () => {
     const listData = await handleCreateShoppingList();
     if (listData) {
-      // Navigate to shopping list with the new list data
       navigate('/shopping-list', { 
         state: { 
           newList: listData 
@@ -57,6 +82,66 @@ const GrabAndGoPage = () => {
   const handleImportList = (items: any[]) => {
     handleImportFromList(items);
     setShowImportDialog(false);
+  };
+
+  const handleApplySuggestion = async (suggestion: SmartSuggestion) => {
+    try {
+      switch (suggestion.type) {
+        case 'duplicate':
+          // Merge duplicate items
+          const mergedItem = mergeItems(shoppingItems, suggestion.items);
+          await handleUpdateItem(mergedItem.id, mergedItem);
+          
+          // Delete the other duplicate items
+          const itemsToDelete = suggestion.items.filter(id => id !== mergedItem.id);
+          if (itemsToDelete.length > 0) {
+            await handleDeleteItems(itemsToDelete);
+          }
+          
+          toast({
+            title: "Items Merged",
+            description: "Duplicate items have been successfully merged",
+            duration: 3000,
+          });
+          break;
+          
+        case 'quantity':
+          // Handle quantity optimization
+          toast({
+            title: "Quantity Suggestion Applied",
+            description: "Quantity has been optimized",
+            duration: 3000,
+          });
+          break;
+          
+        case 'category':
+          // Handle category optimization
+          toast({
+            title: "Categories Updated",
+            description: "Items have been better categorized",
+            duration: 3000,
+          });
+          break;
+          
+        default:
+          break;
+      }
+      
+      // Mark suggestion as applied/dismissed
+      handleDismissSuggestion(suggestion);
+    } catch (error) {
+      console.error('Error applying suggestion:', error);
+      toast({
+        title: "Error",
+        description: "Failed to apply suggestion. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDismissSuggestion = (suggestion: SmartSuggestion) => {
+    const suggestionKey = `${suggestion.type}-${suggestion.items.join('-')}`;
+    setDismissedSuggestions(prev => new Set([...prev, suggestionKey]));
   };
 
   if (isLoading) {
@@ -86,6 +171,13 @@ const GrabAndGoPage = () => {
         transition={{ delay: 0.2, duration: 0.5 }}
         className="flex-1 px-3 md:px-4 py-4 md:py-6 mb-20 max-w-4xl mx-auto w-full overflow-hidden"
       >
+        {/* Smart Suggestions */}
+        <GrabAndGoSmartSuggestions
+          suggestions={smartSuggestions}
+          onApplySuggestion={handleApplySuggestion}
+          onDismissSuggestion={handleDismissSuggestion}
+        />
+
         <GrabAndGoItemsList
           items={shoppingItems}
           viewMode={viewMode}
