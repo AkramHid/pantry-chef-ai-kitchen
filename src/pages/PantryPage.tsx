@@ -48,10 +48,6 @@ const PantryPage = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedList, setSelectedList] = useState<string | undefined>();
 
-  const handleBack = () => {
-    navigate('/');
-  };
-
   const handleSendToShopping = async () => {
     if (!user || selectedItems.length === 0) return;
 
@@ -155,7 +151,7 @@ const PantryPage = () => {
 
   return (
     <div className="min-h-screen bg-kitchen-cream">
-      <Header onBack={handleBack} title="My Pantry" />
+      <Header title="My Pantry" showBackButton={true} />
       
       <main className="container mx-auto px-4 py-6 pb-20">
         <motion.div 
