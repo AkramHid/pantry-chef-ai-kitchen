@@ -10,7 +10,7 @@ import { usePantryLists } from '@/hooks/use-pantry-lists';
 import PantryList from '@/components/pantry/PantryList';
 import CustomLists from '@/components/pantry/CustomLists';
 import AddItemDialog from '@/components/pantry/AddItemDialog';
-import Header from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingItemData } from '@/components/shopping/ShoppingItem';
