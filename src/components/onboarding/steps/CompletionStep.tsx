@@ -4,9 +4,15 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Sparkles, ChefHat, Gift } from 'lucide-react';
+import { OnboardingData } from '../IntelligentOnboarding';
 
 interface CompletionStepProps {
+  data: OnboardingData;
+  onUpdateData: (section: keyof OnboardingData, data: any) => void;
   onNext: () => void;
+  onBack: () => void;
+  isFirst: boolean;
+  isLast: boolean;
 }
 
 const CompletionStep: React.FC<CompletionStepProps> = ({ onNext }) => {
