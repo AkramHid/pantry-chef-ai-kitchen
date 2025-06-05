@@ -1,0 +1,90 @@
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { PantryItemData, CustomListType } from '@/types/pantry';
+import PantryList from './PantryList';
+import CustomLists from './CustomLists';
+
+interface PantryPageContentProps {
+  items: PantryItemData[];
+  lists: CustomListType[];
+  selectedItems: string[];
+  isLoading: boolean;
+  onIncrement: (id: string) => void;
+  onDecrement: (id: string) => void;
+  onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<PantryItemData>) => void;
+  onAddNew: () => void;
+  onAddToList: (itemId: string, listId: string) => void;
+  onToggleSelectItem: (itemId: string) => void;
+  onCreateList: (name: string) => void;
+  onDeleteList: (listId: string) => void;
+  onRenameList: (listId: string, newName: string) => void;
+  onRemoveFromList: (listId: string, itemId: string) => void;
+  onSendMissingToShopping: (listId: string) => void;
+}
+
+const PantryPageContent: React.FC<PantryPageContentProps> = ({
+  items,
+  lists,
+  selectedItems,
+  isLoading,
+  onIncrement,
+  onDecrement,
+  onDelete,
+  onUpdate,
+  onAddNew,
+  onAddToList,
+  onToggleSelectItem,
+  onCreateList,
+  onDeleteList,
+  onRenameList,
+  onRemoveFromList,
+  onSendMissingToShopping
+}) => {
+  const isMobile = useIsMobile();
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      {/* Main Content Grid */}
+      <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
+        {/* Pantry Items */}
+        <div className={isMobile ? 'order-1' : 'lg:col-span-2 order-1'}>
+          <PantryList
+            items={items}
+            onIncrement={onIncrement}
+            onDecrement={onDecrement}
+            onDelete={onDelete}
+            onAddNew={onAddNew}
+            customLists={lists}
+            onAddToList={onAddToList}
+            selectedItems={selectedItems}
+            onToggleSelectItem={onToggleSelectItem}
+            isLoading={isLoading}
+            onUpdate={onUpdate}
+          />
+        </div>
+
+        {/* Custom Lists */}
+        <div className={isMobile ? 'order-2' : 'order-2'}>
+          <CustomLists
+            lists={lists}
+            pantryItems={items}
+            onCreateList={onCreateList}
+            onDeleteList={onDeleteList}
+            onRenameList={onRenameList}
+            onRemoveFromList={onRemoveFromList}
+            onSendMissingToShopping={onSendMissingToShopping}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default PantryPageContent;
