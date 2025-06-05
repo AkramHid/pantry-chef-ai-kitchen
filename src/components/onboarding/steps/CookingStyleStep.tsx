@@ -12,6 +12,8 @@ interface CookingStyleStepProps {
   onUpdateData: (section: keyof OnboardingData, data: any) => void;
   onNext: () => void;
   onBack: () => void;
+  isFirst: boolean;
+  isLast: boolean;
 }
 
 const CookingStyleStep: React.FC<CookingStyleStepProps> = ({
