@@ -1,44 +1,72 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Utensils, ShoppingCart, Users, ChefHat } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { usePantry } from '@/hooks/use-pantry';
-import { useShoppingList } from '@/hooks/use-shopping-list';
-import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ChefTile from '@/components/home/ChefTile';
+import OfflineIndicator from '@/components/layout/OfflineIndicator';
 import FloatingGrabAndGoButton from '@/components/home/FloatingGrabAndGoButton';
-import { format } from 'date-fns';
-import { PantryItemData } from '@/types/pantry';
-import SmartDashboard from '@/components/dashboard/SmartDashboard';
+import SplashScreen from '@/components/home/SplashScreen';
+import IntelligentOnboarding from '@/components/onboarding/IntelligentOnboarding';
+import EnhancedSmartDashboard from '@/components/dashboard/EnhancedSmartDashboard';
+import { useOffline } from '@/hooks/use-offline';
+import { useAuth } from '@/hooks/use-auth';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 
-const IndexPage = () => {
-  const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const { items } = usePantry();
-  const { shoppingItems } = useShoppingList();
-  const { toast } = useToast();
+const Index = () => {
+  const isOnline = useOffline();
+  const { user } = useAuth();
+  const { preferences } = useUserPreferences();
+  const [showSplash, setShowSplash] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Check if user has completed onboarding
+    const hasCompletedOnboarding = localStorage.getItem('pantryChef_onboardingComplete') === 'true';
+    
+    if (user && !hasCompletedOnboarding && !preferences?.onboarding_completed) {
+      setShowOnboarding(true);
+    }
+  }, [user, preferences]);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('pantryChef_onboardingComplete', 'true');
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('pantryChef_onboardingComplete', 'true');
+  };
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
+  if (showOnboarding) {
+    return (
+      <IntelligentOnboarding 
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-kitchen-cream kitchen-texture flex flex-col">
-      <Header title="My Kitchen" />
-
-      <main className="flex-1 px-4 py-6 mb-16">
-        <div className="max-w-6xl mx-auto">
-          <SmartDashboard />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-kitchen-cream via-white to-kitchen-green/5">
+      <OfflineIndicator isOnline={isOnline} />
+      <Header title="Kitchen Assistant" />
+      
+      <main className="pt-16 pb-20">
+        <EnhancedSmartDashboard />
       </main>
-
-      {/* Floating Grab & Go Button */}
-      <FloatingGrabAndGoButton />
-
+      
       <Footer />
+      <FloatingGrabAndGoButton />
     </div>
   );
 };
 
-export default IndexPage;
+export default Index;

@@ -138,6 +138,72 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_progress: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          page_name: string
+          step_completed: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          page_name: string
+          step_completed: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          page_name?: string
+          step_completed?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      page_tutorials: {
+        Row: {
+          animation_type: string | null
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          page_name: string
+          step_name: string
+          step_order: number
+          target_element: string | null
+          title: string
+        }
+        Insert: {
+          animation_type?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          page_name: string
+          step_name: string
+          step_order: number
+          target_element?: string | null
+          title: string
+        }
+        Update: {
+          animation_type?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          page_name?: string
+          step_name?: string
+          step_order?: number
+          target_element?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       pantry_items: {
         Row: {
           added_date: string | null
@@ -243,40 +309,94 @@ export type Database = {
         }
         Relationships: []
       }
+      user_interface_preferences: {
+        Row: {
+          animation_level: string
+          created_at: string
+          dashboard_layout: Json
+          gesture_controls_enabled: boolean
+          haptic_feedback_enabled: boolean
+          id: string
+          mobile_view_preference: string
+          tutorial_hints_enabled: boolean
+          updated_at: string
+          user_id: string
+          voice_commands_enabled: boolean
+        }
+        Insert: {
+          animation_level?: string
+          created_at?: string
+          dashboard_layout?: Json
+          gesture_controls_enabled?: boolean
+          haptic_feedback_enabled?: boolean
+          id?: string
+          mobile_view_preference?: string
+          tutorial_hints_enabled?: boolean
+          updated_at?: string
+          user_id: string
+          voice_commands_enabled?: boolean
+        }
+        Update: {
+          animation_level?: string
+          created_at?: string
+          dashboard_layout?: Json
+          gesture_controls_enabled?: boolean
+          haptic_feedback_enabled?: boolean
+          id?: string
+          mobile_view_preference?: string
+          tutorial_hints_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+          voice_commands_enabled?: boolean
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
+          accessibility_mode: boolean
           auto_add_expiring: boolean
           created_at: string
           expiry_reminder_days: number
           grocery_store_layout: string
           id: string
+          mobile_optimized_layout: boolean
           notification_email: boolean
           notification_push: boolean
+          onboarding_completed: boolean
           theme: string
+          tutorial_mode: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          accessibility_mode?: boolean
           auto_add_expiring?: boolean
           created_at?: string
           expiry_reminder_days?: number
           grocery_store_layout?: string
           id?: string
+          mobile_optimized_layout?: boolean
           notification_email?: boolean
           notification_push?: boolean
+          onboarding_completed?: boolean
           theme?: string
+          tutorial_mode?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          accessibility_mode?: boolean
           auto_add_expiring?: boolean
           created_at?: string
           expiry_reminder_days?: number
           grocery_store_layout?: string
           id?: string
+          mobile_optimized_layout?: boolean
           notification_email?: boolean
           notification_push?: boolean
+          onboarding_completed?: boolean
           theme?: string
+          tutorial_mode?: string
           updated_at?: string
           user_id?: string
         }

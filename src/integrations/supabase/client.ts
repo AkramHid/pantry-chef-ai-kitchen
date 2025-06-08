@@ -15,6 +15,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export type Tables = Database['public']['Tables'];
 export type ShoppingItem = Tables['shopping_list']['Row'];
 export type PantryItem = Tables['pantry_items']['Row'];
+export type OnboardingProgress = Tables['onboarding_progress']['Row'];
+export type PageTutorial = Tables['page_tutorials']['Row'];
+export type UserInterfacePreferences = Tables['user_interface_preferences']['Row'];
 
 // Get ID as string regardless of the actual type
 export const getIdAsString = (id: string | number): string => {

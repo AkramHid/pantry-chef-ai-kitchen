@@ -13,6 +13,10 @@ interface UserPreferences {
   theme: 'light' | 'dark' | 'auto';
   grocery_store_layout: string;
   auto_add_expiring: boolean;
+  onboarding_completed: boolean;
+  mobile_optimized_layout: boolean;
+  tutorial_mode: 'guided' | 'minimal' | 'off';
+  accessibility_mode: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -56,6 +60,10 @@ export function useUserPreferences() {
           theme: data.theme as 'light' | 'dark' | 'auto',
           grocery_store_layout: data.grocery_store_layout,
           auto_add_expiring: data.auto_add_expiring,
+          onboarding_completed: data.onboarding_completed || false,
+          mobile_optimized_layout: data.mobile_optimized_layout || true,
+          tutorial_mode: data.tutorial_mode as 'guided' | 'minimal' | 'off' || 'guided',
+          accessibility_mode: data.accessibility_mode || false,
           created_at: data.created_at,
           updated_at: data.updated_at
         });
@@ -99,6 +107,10 @@ export function useUserPreferences() {
           theme: data.theme as 'light' | 'dark' | 'auto',
           grocery_store_layout: data.grocery_store_layout,
           auto_add_expiring: data.auto_add_expiring,
+          onboarding_completed: data.onboarding_completed || false,
+          mobile_optimized_layout: data.mobile_optimized_layout || true,
+          tutorial_mode: data.tutorial_mode as 'guided' | 'minimal' | 'off' || 'guided',
+          accessibility_mode: data.accessibility_mode || false,
           created_at: data.created_at,
           updated_at: data.updated_at
         });
