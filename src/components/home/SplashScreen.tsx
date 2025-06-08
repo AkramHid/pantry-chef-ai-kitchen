@@ -30,6 +30,15 @@ const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isAppLoading, setIsAppLoading] = useState(true);
 
+  // Skip splash if user has seen it before
+  useEffect(() => {
+    const hasSeenSplash = localStorage.getItem('hasSeenSplash');
+    if (hasSeenSplash === 'true') {
+      onComplete();
+      return;
+    }
+  }, [onComplete]);
+
   // Logo animation completes after 2 seconds
   useEffect(() => {
     const logoTimer = setTimeout(() => {

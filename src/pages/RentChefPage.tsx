@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Settings } from 'lucide-react';
@@ -8,6 +8,7 @@ import ChefPageHero from '@/components/chef/ChefPageHero';
 import { ChefFilter } from '@/components/chef/ChefFilter';
 import ChefBookingSidebar from '@/components/chef/ChefBookingSidebar';
 import { ChefCard } from '@/components/chef/ChefCard';
+import ChefOnboarding from '@/components/chef/ChefOnboarding';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChefCategory, ChefStyle, Chef } from '@/types/chef';
 import { CHEFS } from '@/data/chefData';
@@ -21,6 +22,14 @@ const RentChefPage = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('chefOnboardingComplete');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   const handleChefSelect = (chef: Chef) => {
     setSelectedChef(chef);
@@ -30,11 +39,29 @@ const RentChefPage = () => {
     setSelectedChef(null);
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('chefOnboardingComplete', 'true');
+  };
+
   const filteredChefs = CHEFS.filter((chef) => {
     const matchesCategory = selectedCategory === 'all' || chef.categories.includes(selectedCategory);
     const matchesStyle = selectedStyle === 'all' || chef.styles.includes(selectedStyle);
     return matchesCategory && matchesStyle;
   });
+
+  if (showOnboarding) {
+    return (
+      <ChefOnboarding 
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

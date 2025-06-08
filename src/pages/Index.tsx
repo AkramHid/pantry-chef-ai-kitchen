@@ -19,33 +19,42 @@ const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    // Check if user has completed onboarding
-    const hasCompletedOnboarding = localStorage.getItem('pantryChef_onboardingComplete') === 'true';
-    
-    if (user && !hasCompletedOnboarding && !preferences?.onboarding_completed) {
-      setShowOnboarding(true);
+    // Only check onboarding status once when user is loaded
+    if (user) {
+      const hasCompletedOnboarding = localStorage.getItem('pantryChef_onboardingComplete') === 'true';
+      const hasSeenAppBefore = localStorage.getItem('hasSeenSplash') === 'true';
+      
+      // Show onboarding only if user hasn't completed it AND hasn't seen the app before
+      if (!hasCompletedOnboarding && !hasSeenAppBefore && !preferences?.onboarding_completed) {
+        setShowOnboarding(true);
+      }
     }
-  }, [user, preferences]);
+  }, [user]); // Only depend on user, not preferences to avoid re-triggering
 
   const handleSplashComplete = () => {
     setShowSplash(false);
+    localStorage.setItem('hasSeenSplash', 'true');
   };
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     localStorage.setItem('pantryChef_onboardingComplete', 'true');
+    localStorage.setItem('hasCompletedFullOnboarding', 'true');
   };
 
   const handleOnboardingSkip = () => {
     setShowOnboarding(false);
     localStorage.setItem('pantryChef_onboardingComplete', 'true');
+    localStorage.setItem('hasCompletedFullOnboarding', 'true');
   };
 
-  if (showSplash) {
+  // Show splash only on first visit
+  if (showSplash && localStorage.getItem('hasSeenSplash') !== 'true') {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
 
-  if (showOnboarding) {
+  // Show onboarding only once for new users
+  if (showOnboarding && user && localStorage.getItem('hasCompletedFullOnboarding') !== 'true') {
     return (
       <IntelligentOnboarding 
         onComplete={handleOnboardingComplete}

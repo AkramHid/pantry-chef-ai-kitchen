@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
 
 interface ExpiringSoonItem {
   id: string;
@@ -23,10 +24,19 @@ interface ExpiringSoonSectionProps {
 const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleAddToGrabAndGo = async (item: ExpiringSoonItem) => {
+    if (!user) {
+      toast({
+        title: 'Please sign in',
+        description: 'You need to be signed in to add items',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
-      // Add item to shopping list (Grab & Go uses unchecked shopping list items)
       const { error } = await supabase
         .from('shopping_list')
         .insert({
@@ -35,10 +45,14 @@ const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
           unit: 'pc',
           category: 'General',
           ischecked: false,
-          note: `Expiring in ${item.daysLeft} day${item.daysLeft !== 1 ? 's' : ''}`
+          note: `Expiring in ${item.daysLeft} day${item.daysLeft !== 1 ? 's' : ''}`,
+          user_id: user.id
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Added to Grab & Go",
@@ -49,7 +63,7 @@ const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
       console.error('Error adding item to Grab & Go:', error);
       toast({
         title: 'Failed to add item',
-        description: 'Please try again',
+        description: 'Please try again later',
         variant: 'destructive',
       });
     }
