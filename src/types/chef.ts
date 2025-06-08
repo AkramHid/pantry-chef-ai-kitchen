@@ -1,5 +1,5 @@
 
-export type ChefCategory = 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'event' | 'mexican' | 'spanish' | 'mediterranean' | 'italian' | 'french' | 'all';
+export type ChefCategory = 'breakfast' | 'lunch' | 'dinner' | 'dessert' | 'event' | 'mexican' | 'spanish' | 'mediterranean' | 'italian' | 'french' | 'healthy' | 'all';
 export type ChefStyle = 'traditional' | 'modern' | 'fine-dining' | 'Mexican' | 'Italian' | 'Healthy' | 'Mediterranean' | 'Asian' | 'Meal Prep' | 'Brunch' | 'all';
 
 export type ChefTier = 'home' | 'professional' | 'elite';

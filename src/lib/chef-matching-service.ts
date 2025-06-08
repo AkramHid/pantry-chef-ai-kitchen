@@ -1,5 +1,4 @@
-
-import { Chef, ChefMatchingCriteria, ChefRecommendation } from '@/types/chef';
+import { Chef, ChefMatchingCriteria, ChefRecommendation, ChefTier } from '@/types/chef';
 
 export class ChefMatchingService {
   static calculateMatchScore(chef: Chef, criteria: ChefMatchingCriteria): number {
