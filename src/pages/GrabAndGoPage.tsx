@@ -49,7 +49,7 @@ const GrabAndGoPage = () => {
 
   // Generate smart suggestions when items change
   useEffect(() => {
-    if (shoppingItems.length > 0) {
+    if (shoppingItems && shoppingItems.length > 0) {
       const suggestions = generateSmartSuggestions(shoppingItems);
       const filteredSuggestions = suggestions.filter(suggestion => 
         !dismissedSuggestions.has(`${suggestion.type}-${suggestion.items.join('-')}`)
@@ -106,7 +106,6 @@ const GrabAndGoPage = () => {
           break;
           
         case 'quantity':
-          // Handle quantity optimization
           toast({
             title: "Quantity Suggestion Applied",
             description: "Quantity has been optimized",
@@ -115,7 +114,6 @@ const GrabAndGoPage = () => {
           break;
           
         case 'category':
-          // Handle category optimization
           toast({
             title: "Categories Updated",
             description: "Items have been better categorized",
@@ -158,11 +156,14 @@ const GrabAndGoPage = () => {
     );
   }
 
+  // Ensure we always have a valid array
+  const validShoppingItems = Array.isArray(shoppingItems) ? shoppingItems : [];
+
   return (
     <div className="min-h-screen bg-kitchen-cream flex flex-col">
       <GrabAndGoHeader 
         onExit={handleExitGrabAndGo} 
-        itemCount={shoppingItems.length} 
+        itemCount={validShoppingItems.length} 
       />
 
       <motion.main 
@@ -179,14 +180,14 @@ const GrabAndGoPage = () => {
         />
 
         <GrabAndGoItemsList
-          items={shoppingItems}
+          items={validShoppingItems}
           viewMode={viewMode}
           onViewModeChange={!isMobile ? setViewMode : undefined}
           onToggle={handleToggle}
           onQuickAdd={handleQuickAdd}
         />
         
-        {shoppingItems.some(item => item.isChecked) && (
+        {validShoppingItems.some(item => item.isChecked) && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

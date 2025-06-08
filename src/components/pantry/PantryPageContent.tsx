@@ -53,8 +53,21 @@ const PantryPageContent: React.FC<PantryPageContentProps> = ({
     >
       {/* Main Content Grid */}
       <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
-        {/* Pantry Items */}
-        <div className={isMobile ? 'order-1' : 'lg:col-span-2 order-1'}>
+        {/* Custom Lists - Now at the top/left */}
+        <div className={isMobile ? 'order-1' : 'order-1'}>
+          <CustomLists
+            lists={lists}
+            pantryItems={items}
+            onCreateList={onCreateList}
+            onDeleteList={onDeleteList}
+            onRenameList={onRenameList}
+            onRemoveFromList={onRemoveFromList}
+            onSendMissingToShopping={onSendMissingToShopping}
+          />
+        </div>
+
+        {/* Pantry Items - Now on the right/bottom */}
+        <div className={isMobile ? 'order-2' : 'lg:col-span-2 order-2'}>
           <PantryList
             items={items}
             onIncrement={onIncrement}
@@ -67,19 +80,6 @@ const PantryPageContent: React.FC<PantryPageContentProps> = ({
             onToggleSelectItem={onToggleSelectItem}
             isLoading={isLoading}
             onUpdate={onUpdate}
-          />
-        </div>
-
-        {/* Custom Lists */}
-        <div className={isMobile ? 'order-2' : 'order-2'}>
-          <CustomLists
-            lists={lists}
-            pantryItems={items}
-            onCreateList={onCreateList}
-            onDeleteList={onDeleteList}
-            onRenameList={onRenameList}
-            onRemoveFromList={onRemoveFromList}
-            onSendMissingToShopping={onSendMissingToShopping}
           />
         </div>
       </div>

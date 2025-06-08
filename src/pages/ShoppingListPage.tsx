@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import ShoppingList from '@/components/shopping/ShoppingList';
 import ShoppingListLayout from '@/components/shopping/ShoppingListLayout';
+import TutorialOverlay from '@/components/onboarding/TutorialOverlay';
 import { useShoppingList } from '@/hooks/use-shopping-list';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -41,6 +42,9 @@ const ShoppingListPage = () => {
           onShare={handleShare}
         />
       )}
+      
+      {/* Tutorial Overlay */}
+      <TutorialOverlay pageName="shopping" />
     </ShoppingListLayout>
   );
 };

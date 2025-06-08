@@ -14,9 +14,12 @@ export function useOnboarding(pageName: string) {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
+    if (user && pageName) {
       loadTutorials();
       loadProgress();
+    } else {
+      setIsOnboardingActive(false);
+      setIsLoading(false);
     }
   }, [user, pageName]);
 
@@ -33,6 +36,7 @@ export function useOnboarding(pageName: string) {
       setTutorials(data || []);
     } catch (error) {
       console.error('Error loading tutorials:', error);
+      setTutorials([]);
     }
   };
 
@@ -51,11 +55,11 @@ export function useOnboarding(pageName: string) {
       const completed = data?.map(p => p.step_completed) || [];
       setCompletedSteps(completed);
       
-      // Check if user has completed all steps for this page
-      const allStepsCompleted = tutorials.length > 0 && 
-        tutorials.every(tutorial => completed.includes(tutorial.step_name));
+      // Only show onboarding if there are tutorials and not all are completed
+      const hasUncompletedSteps = tutorials.length > 0 && 
+        !tutorials.every(tutorial => completed.includes(tutorial.step_name));
       
-      setIsOnboardingActive(!allStepsCompleted && tutorials.length > 0);
+      setIsOnboardingActive(hasUncompletedSteps);
       
       // Find current step (first incomplete step)
       const firstIncompleteIndex = tutorials.findIndex(
@@ -65,6 +69,8 @@ export function useOnboarding(pageName: string) {
       
     } catch (error) {
       console.error('Error loading onboarding progress:', error);
+      setCompletedSteps([]);
+      setIsOnboardingActive(false);
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +82,7 @@ export function useOnboarding(pageName: string) {
     try {
       const { error } = await supabase
         .from('onboarding_progress')
-        .insert({
+        .upsert({
           user_id: user.id,
           page_name: pageName,
           step_completed: stepName
@@ -84,7 +90,8 @@ export function useOnboarding(pageName: string) {
 
       if (error) throw error;
 
-      setCompletedSteps(prev => [...prev, stepName]);
+      const newCompletedSteps = [...completedSteps, stepName];
+      setCompletedSteps(newCompletedSteps);
       
       // Move to next step
       const nextStepIndex = currentStep + 1;
@@ -111,7 +118,7 @@ export function useOnboarding(pageName: string) {
     if (!user) return;
 
     try {
-      // Mark all steps as completed
+      // Mark all steps as completed for this page
       const insertData = tutorials.map(tutorial => ({
         user_id: user.id,
         page_name: pageName,

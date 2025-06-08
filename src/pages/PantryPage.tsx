@@ -7,6 +7,7 @@ import { usePantryShoppingActions } from '@/hooks/use-pantry-shopping';
 import PantryPageHeader from '@/components/pantry/PantryPageHeader';
 import PantryPageContent from '@/components/pantry/PantryPageContent';
 import AddItemDialog from '@/components/pantry/AddItemDialog';
+import TutorialOverlay from '@/components/onboarding/TutorialOverlay';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
@@ -104,6 +105,9 @@ const PantryPage = () => {
         onAddItem={addItem}
         selectedList={selectedList}
       />
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay pageName="pantry" />
     </div>
   );
 };
