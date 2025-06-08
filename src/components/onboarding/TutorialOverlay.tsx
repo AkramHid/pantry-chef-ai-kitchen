@@ -103,7 +103,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ pageName }) => {
         {/* Highlight overlay for target element */}
         {highlightedElement && (
           <motion.div
-            className="absolute pointer-events-none"
+            className="absolute pointer-events-none border-2 border-kitchen-green rounded-lg bg-kitchen-green/10"
             style={{
               top: highlightedElement.getBoundingClientRect().top - 8,
               left: highlightedElement.getBoundingClientRect().left - 8,
@@ -111,7 +111,6 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ pageName }) => {
               height: highlightedElement.getBoundingClientRect().height + 16,
             }}
             animate={getAnimationVariants(currentTutorial.animation_type || 'highlight')}
-            className="border-2 border-kitchen-green rounded-lg bg-kitchen-green/10"
           />
         )}
 

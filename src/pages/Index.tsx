@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 
 const Index = () => {
-  const isOnline = useOffline();
+  const { isOnline } = useOffline();
   const { user } = useAuth();
   const { preferences } = useUserPreferences();
   const [showSplash, setShowSplash] = useState(true);

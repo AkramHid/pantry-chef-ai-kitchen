@@ -30,16 +30,16 @@ const EnhancedSmartDashboard: React.FC = () => {
   const isMobile = useIsMobile();
   const { preferences } = useInterfacePreferences();
   const { items: pantryItems } = usePantry();
-  const { items: shoppingItems } = useShoppingList();
+  const { shoppingItems } = useShoppingList();
   
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   // Calculate dashboard metrics
   const totalPantryItems = pantryItems.length;
-  const uncheckedShoppingItems = shoppingItems.filter(item => !item.ischecked).length;
+  const uncheckedShoppingItems = shoppingItems.filter(item => !item.isChecked).length;
   const expiringItems = pantryItems.filter(item => {
-    if (!item.expiry_date) return false;
-    const expiryDate = new Date(item.expiry_date);
+    if (!item.expiryDate) return false;
+    const expiryDate = new Date(item.expiryDate);
     const today = new Date();
     const diffTime = expiryDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -260,10 +260,10 @@ const EnhancedSmartDashboard: React.FC = () => {
         {expiringItems.length > 0 && (
           <ExpiringSoonSection 
             items={expiringItems.map(item => ({
-              id: item.id.toString(),
-              name: item.name || 'Unknown Item',
-              daysLeft: Math.ceil((new Date(item.expiry_date!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
-              image: item.image_url
+              id: item.id,
+              name: item.name,
+              daysLeft: Math.ceil((new Date(item.expiryDate!).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
+              image: item.image
             }))}
           />
         )}
