@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PantryItemData, CustomListType } from '@/types/pantry';
-import PantryList from './PantryList';
+import EnhancedPantryList from './EnhancedPantryList';
 import CustomLists from './CustomLists';
 
 interface PantryPageContentProps {
@@ -51,10 +51,10 @@ const PantryPageContent: React.FC<PantryPageContentProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      {/* Main Content Grid */}
-      <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
-        {/* Custom Lists - Now at the top/left */}
-        <div className={isMobile ? 'order-1' : 'order-1'}>
+      {/* Enhanced Grid Layout */}
+      <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-4'}`}>
+        {/* Custom Lists - Sidebar on desktop, top on mobile */}
+        <div className={`${isMobile ? 'order-1' : 'xl:col-span-1 order-1'}`}>
           <CustomLists
             lists={lists}
             pantryItems={items}
@@ -66,9 +66,9 @@ const PantryPageContent: React.FC<PantryPageContentProps> = ({
           />
         </div>
 
-        {/* Pantry Items - Now on the right/bottom */}
-        <div className={isMobile ? 'order-2' : 'lg:col-span-2 order-2'}>
-          <PantryList
+        {/* Main Pantry Items - Full width on mobile, main area on desktop */}
+        <div className={`${isMobile ? 'order-2' : 'xl:col-span-3 order-2'}`}>
+          <EnhancedPantryList
             items={items}
             onIncrement={onIncrement}
             onDecrement={onDecrement}

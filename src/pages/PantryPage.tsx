@@ -10,6 +10,7 @@ import AddItemDialog from '@/components/pantry/AddItemDialog';
 import TutorialOverlay from '@/components/onboarding/TutorialOverlay';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import PageTransition from '@/components/layout/PageTransition';
 
 const PantryPage = () => {
   const navigate = useNavigate();
@@ -53,22 +54,28 @@ const PantryPage = () => {
     await sendMissingToShopping(listId, lists, items);
   };
 
+  const handleToggleSelectItem = (itemId: string) => {
+    toggleSelectItem(itemId);
+  };
+
   if (isLoading || listsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-green mx-auto mb-4"></div>
-          <p className="text-kitchen-green">Loading your pantry...</p>
+      <PageTransition className="bg-kitchen-cream">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-green mx-auto mb-4"></div>
+            <p className="text-kitchen-green font-medium">Loading your pantry...</p>
+          </div>
         </div>
-      </div>
+      </PageTransition>
     );
   }
 
   return (
-    <div className="min-h-screen bg-kitchen-cream">
+    <PageTransition className="bg-kitchen-cream">
       <Header title="My Pantry" showBackButton={true} />
       
-      <main className="container mx-auto px-4 py-6 pb-20">
+      <main className="container mx-auto px-4 py-6 pb-20 max-w-7xl">
         {/* Action Bar */}
         <PantryPageHeader
           selectedItems={selectedItems}
@@ -88,7 +95,7 @@ const PantryPage = () => {
           onUpdate={updateItem}
           onAddNew={() => setShowAddDialog(true)}
           onAddToList={addItemToList}
-          onToggleSelectItem={toggleSelectItem}
+          onToggleSelectItem={handleToggleSelectItem}
           onCreateList={createList}
           onDeleteList={deleteList}
           onRenameList={renameList}
@@ -108,7 +115,7 @@ const PantryPage = () => {
 
       {/* Tutorial Overlay */}
       <TutorialOverlay pageName="pantry" />
-    </div>
+    </PageTransition>
   );
 };
 
