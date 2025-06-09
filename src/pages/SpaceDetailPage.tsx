@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Search, Grid3X3, List, Filter } from 'lucide-react';
+import { ArrowLeft, Plus, Search, Grid3X3, List, Filter, Calendar, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,44 +9,59 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import PantryList from '@/components/pantry/PantryList';
-import { usePantry } from '@/hooks/use-pantry';
+import TaskList from '@/components/spaces/TaskList';
+import AddTaskDialog from '@/components/spaces/AddTaskDialog';
 import { useSpaces } from '@/hooks/use-spaces';
 import { ViewMode } from '@/components/ui/list-layout';
 
 const SpaceDetailPage = () => {
   const { spaceId } = useParams();
   const navigate = useNavigate();
-  const { items, isLoading } = usePantry();
-  const { spaces } = useSpaces();
+  const { spaces, updateSpace } = useSpaces();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
 
   const space = spaces.find(s => s.id === spaceId);
   
-  // Filter items based on space location or category matching
-  const spaceItems = items.filter(item => {
-    if (!space) return false;
-    // Try to match by category first, then by a more flexible matching
-    const spaceNameLower = space.name.toLowerCase();
-    const itemCategoryLower = item.category.toLowerCase();
+  const filteredTasks = space?.tasks.filter(task =>
+    task.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  const completedTasks = filteredTasks.filter(task => task.completed);
+  const pendingTasks = filteredTasks.filter(task => !task.completed);
+
+  const handleAddTask = (taskData: { name: string; notes?: string; dueDate?: Date; assignee?: string }) => {
+    if (!space) return;
     
-    // Direct category match
-    if (itemCategoryLower === spaceNameLower) return true;
+    const newTask = {
+      id: `task-${Date.now()}`,
+      name: taskData.name,
+      completed: false,
+      notes: taskData.notes,
+      dueDate: taskData.dueDate,
+      assignee: taskData.assignee,
+    };
+
+    const updatedTasks = [...space.tasks, newTask];
+    updateSpace(space.id, { tasks: updatedTasks });
+  };
+
+  const handleToggleTask = (taskId: string) => {
+    if (!space) return;
     
-    // Flexible matching for common space names
-    if (spaceNameLower.includes('fridge') && itemCategoryLower === 'fridge') return true;
-    if (spaceNameLower.includes('freezer') && itemCategoryLower === 'freezer') return true;
-    if (spaceNameLower.includes('pantry') && itemCategoryLower === 'pantry') return true;
-    if (spaceNameLower.includes('cabinet') && itemCategoryLower === 'pantry') return true;
-    if (spaceNameLower.includes('cupboard') && itemCategoryLower === 'pantry') return true;
+    const updatedTasks = space.tasks.map(task =>
+      task.id === taskId ? { ...task, completed: !task.completed } : task
+    );
+    updateSpace(space.id, { tasks: updatedTasks });
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    if (!space) return;
     
-    return false;
-  });
-  
-  const filteredItems = spaceItems.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const updatedTasks = space.tasks.filter(task => task.id !== taskId);
+    updateSpace(space.id, { tasks: updatedTasks });
+  };
 
   if (!space) {
     return (
@@ -89,17 +104,17 @@ const SpaceDetailPage = () => {
                   {space.name}
                 </h1>
                 <p className="text-muted-foreground">
-                  {spaceItems.length} items • {space.description}
+                  {space.tasks.length} tasks • {completedTasks.length} completed • {space.description}
                 </p>
               </div>
             </div>
             
             <Button 
               className="bg-kitchen-green hover:bg-kitchen-green/90"
-              onClick={() => navigate('/pantry?action=add')}
+              onClick={() => setShowAddTaskDialog(true)}
             >
               <Plus size={18} className="mr-1" />
-              Add Item
+              Add Task
             </Button>
           </motion.div>
 
@@ -109,7 +124,7 @@ const SpaceDetailPage = () => {
                 <div className="relative flex-grow">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search items in this space..."
+                    placeholder="Search tasks and missions..."
                     className="pl-8 bg-white"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -141,47 +156,46 @@ const SpaceDetailPage = () => {
             </CardHeader>
             
             <CardContent>
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kitchen-green mx-auto"></div>
-                  <p className="mt-2 text-muted-foreground">Loading items...</p>
-                </div>
-              ) : filteredItems.length === 0 ? (
+              {filteredTasks.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">{space.icon}</div>
                   <h3 className="text-lg font-medium mb-2">
-                    {searchQuery ? 'No matching items found' : 'No items in this space yet'}
+                    {searchQuery ? 'No matching tasks found' : 'No tasks or missions yet'}
                   </h3>
                   <p className="text-muted-foreground mb-4">
                     {searchQuery 
                       ? 'Try adjusting your search terms'
-                      : `Add items to your ${space.name.toLowerCase()} to get started`
+                      : `Create tasks and missions for your ${space.name.toLowerCase()} to get organized`
                     }
                   </p>
                   {!searchQuery && (
                     <Button 
                       className="bg-kitchen-green hover:bg-kitchen-green/90"
-                      onClick={() => navigate('/pantry?action=add')}
+                      onClick={() => setShowAddTaskDialog(true)}
                     >
                       <Plus size={18} className="mr-1" />
-                      Add First Item
+                      Add First Task
                     </Button>
                   )}
                 </div>
               ) : (
-                <PantryList 
-                  items={filteredItems}
+                <TaskList 
+                  tasks={filteredTasks}
                   viewMode={viewMode}
-                  onIncrement={() => {}}
-                  onDecrement={() => {}}
-                  onDelete={() => {}}
-                  onAddNew={() => navigate('/pantry?action=add')}
+                  onToggleTask={handleToggleTask}
+                  onDeleteTask={handleDeleteTask}
                 />
               )}
             </CardContent>
           </Card>
         </div>
       </main>
+
+      <AddTaskDialog 
+        open={showAddTaskDialog}
+        onOpenChange={setShowAddTaskDialog}
+        onAddTask={handleAddTask}
+      />
       
       <Footer />
     </div>
