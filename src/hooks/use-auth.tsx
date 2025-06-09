@@ -32,6 +32,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Clear app state on sign out
+        if (event === 'SIGNED_OUT') {
+          // Clear all localStorage and sessionStorage
+          localStorage.removeItem('globalOnboardingComplete');
+          localStorage.removeItem('chefOnboardingComplete');
+          sessionStorage.clear();
+        }
       }
     );
 
@@ -97,6 +105,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       throw error;
     }
+
+    // Clear all app data
+    localStorage.clear();
+    sessionStorage.clear();
 
     toast({
       title: 'Signed out',

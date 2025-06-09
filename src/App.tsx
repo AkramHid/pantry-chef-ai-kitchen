@@ -4,11 +4,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { useOffline } from "@/hooks/use-offline";
 import { AuthProvider } from "@/hooks/use-auth";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import OfflineIndicator from "@/components/layout/OfflineIndicator";
 import { useState, useEffect } from "react";
 import Index from "./pages/Index";
+import AuthPage from "./pages/AuthPage";
 import PantryPage from "./pages/PantryPage";
 import ShoppingListPage from "./pages/ShoppingListPage";
 import RecipesPage from "./pages/RecipesPage";
@@ -46,23 +49,99 @@ const AppContent = () => {
       <Sonner />
       <OfflineIndicator isOnline={isOnline} />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/pantry" element={<PantryPage />} />
-          <Route path="/shopping-list" element={<ShoppingListPage />} />
-          <Route path="/recipes" element={<RecipesPage />} />
-          <Route path="/spaces" element={<SpacesPage />} />
-          <Route path="/spaces/:spaceId" element={<SpaceDetailPage />} />
-          <Route path="/grab-and-go" element={<GrabAndGoPage />} />
-          <Route path="/rent-chef" element={<RentChefPage />} />
-          <Route path="/family" element={<FamilyPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/loyalty-cards" element={<LoyaltyCardsPage />} />
-          <Route path="/refer" element={<ReferPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/auth" element={<AuthPage />} />
+            
+            {/* Protected Routes */}
+            <Route path="/" element={
+              <ProtectedRoute requireAuth={false}>
+                <Index />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/pantry" element={
+              <ProtectedRoute>
+                <PantryPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/shopping-list" element={
+              <ProtectedRoute>
+                <ShoppingListPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/recipes" element={
+              <ProtectedRoute>
+                <RecipesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/spaces" element={
+              <ProtectedRoute>
+                <SpacesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/spaces/:spaceId" element={
+              <ProtectedRoute>
+                <SpaceDetailPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/grab-and-go" element={
+              <ProtectedRoute>
+                <GrabAndGoPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/rent-chef" element={
+              <ProtectedRoute>
+                <RentChefPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/family" element={
+              <ProtectedRoute>
+                <FamilyPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/notifications" element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/loyalty-cards" element={
+              <ProtectedRoute>
+                <LoyaltyCardsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/refer" element={
+              <ProtectedRoute>
+                <ReferPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AnimatePresence>
       </BrowserRouter>
     </>
   );

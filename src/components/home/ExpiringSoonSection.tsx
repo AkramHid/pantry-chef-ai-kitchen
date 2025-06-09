@@ -29,15 +29,39 @@ const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
   const handleAddToGrabAndGo = async (item: ExpiringSoonItem) => {
     if (!user) {
       toast({
-        title: 'Please sign in',
-        description: 'You need to be signed in to add items',
+        title: 'Authentication required',
+        description: 'Please sign in to add items to your Grab & Go list',
         variant: 'destructive',
       });
+      navigate('/auth');
       return;
     }
 
     try {
-      const { error } = await supabase
+      // Check if item already exists in shopping list
+      const { data: existingItems, error: checkError } = await supabase
+        .from('shopping_list')
+        .select('id')
+        .eq('name', item.name)
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (checkError) {
+        console.error('Error checking existing items:', checkError);
+        throw checkError;
+      }
+
+      if (existingItems && existingItems.length > 0) {
+        toast({
+          title: "Item already exists",
+          description: `${item.name} is already in your Grab & Go list`,
+          variant: 'default',
+        });
+        return;
+      }
+
+      // Add new item to shopping list
+      const { error: insertError } = await supabase
         .from('shopping_list')
         .insert({
           name: item.name,
@@ -49,9 +73,9 @@ const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
           user_id: user.id
         });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (insertError) {
+        console.error('Error adding item to shopping list:', insertError);
+        throw insertError;
       }
 
       toast({
@@ -59,11 +83,12 @@ const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
         description: `${item.name} has been added to your Grab & Go list`,
         duration: 3000,
       });
+
     } catch (error) {
-      console.error('Error adding item to Grab & Go:', error);
+      console.error('Error in handleAddToGrabAndGo:', error);
       toast({
         title: 'Failed to add item',
-        description: 'Please try again later',
+        description: 'There was an error adding the item. Please try again.',
         variant: 'destructive',
       });
     }
@@ -130,7 +155,7 @@ const ExpiringSoonSection: React.FC<ExpiringSoonSectionProps> = ({ items }) => {
                   size="sm"
                   variant="outline"
                   onClick={() => handleAddToGrabAndGo(item)}
-                  className="border-kitchen-green text-kitchen-green hover:bg-kitchen-green hover:text-white"
+                  className="border-kitchen-green text-kitchen-green hover:bg-kitchen-green hover:text-white transition-colors"
                 >
                   <Plus size={14} className="mr-1" />
                   Add to Grab & Go
