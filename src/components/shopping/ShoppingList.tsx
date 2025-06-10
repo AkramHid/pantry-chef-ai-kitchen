@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import ShoppingItem, { ShoppingItemData } from './ShoppingItem';
+import { ShareListDialog } from './ShareListDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Share2, Trash2 } from 'lucide-react';
 import { ListLayout, ViewMode } from '@/components/ui/list-layout';
@@ -48,6 +49,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
@@ -208,12 +210,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
             
             <Button 
               variant="outline" 
-              size={isMobile ? "sm" : "icon"} 
-              onClick={onShare}
+              size={isMobile ? "sm" : "default"} 
+              onClick={() => setIsShareDialogOpen(true)}
               className="border-kitchen-green text-kitchen-green"
             >
               <Share2 size={isMobile ? 14 : 16} className={isMobile ? "mr-1" : ""} />
-              {isMobile && "Share"}
+              {isMobile ? "Share" : "Share List"}
             </Button>
           </div>
           
@@ -232,7 +234,8 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
       </div>
       
       <ListLayout
-        title="Shopping List (Organized by Store Layout)"
+        title="Shopping List"
+        subtitle="Organized by Store Layout"
         viewMode={viewMode}
         onViewModeChange={!isMobile ? setViewMode : undefined}
         className="bg-gradient-to-br from-kitchen-cream to-white"
@@ -255,14 +258,14 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
               if (categoryItems.length === 0) return null;
               
               return (
-                <div key={category} className="mb-2">
-                  <div className="px-3 md:px-4 py-2 bg-muted/50 font-medium text-sm text-gray-600 uppercase flex justify-between items-center">
-                    <span>{category}</span>
-                    <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                <div key={category} className="mb-4">
+                  <div className="px-3 md:px-4 py-3 bg-kitchen-green/10 font-medium text-sm text-kitchen-dark uppercase flex justify-between items-center rounded-t-lg border-l-4 border-kitchen-green">
+                    <span>🏪 {category}</span>
+                    <span className="text-xs bg-kitchen-green text-white px-2 py-1 rounded-full">
                       {categoryItems.length} item{categoryItems.length !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  <div className={viewMode === 'grid' ? 'grid gap-2' : ''}>
+                  <div className={`bg-white rounded-b-lg border border-t-0 border-gray-200 ${viewMode === 'grid' ? 'grid gap-2 p-2' : 'divide-y divide-gray-100'}`}>
                     {categoryItems.map(item => (
                       <ShoppingItem
                         key={item.id}
@@ -278,12 +281,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
             
             {/* Checked items section */}
             {hasCheckedItems && (
-              <div className="mt-4 col-span-full">
-                <div className="px-3 md:px-4 py-2 bg-muted/50 font-medium text-sm text-gray-600 uppercase flex items-center">
+              <div className="mt-6 col-span-full">
+                <div className="px-3 md:px-4 py-3 bg-gray-100 font-medium text-sm text-gray-600 uppercase flex items-center rounded-t-lg">
                   <Trash2 size={14} className="mr-2" />
                   Completed Items
                 </div>
-                <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-2' : ''}>
+                <div className={`bg-white rounded-b-lg border border-t-0 border-gray-200 ${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-2 p-2' : 'divide-y divide-gray-100'}`}>
                   {items
                     .filter(item => item.isChecked)
                     .map(item => (
@@ -300,6 +303,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
           </div>
         )}
       </ListLayout>
+
+      <ShareListDialog
+        open={isShareDialogOpen}
+        onOpenChange={setIsShareDialogOpen}
+        items={items}
+      />
     </div>
   );
 };

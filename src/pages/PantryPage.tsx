@@ -11,9 +11,11 @@ import TutorialOverlay from '@/components/onboarding/TutorialOverlay';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PageTransition from '@/components/layout/PageTransition';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PantryPage = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const {
     items,
@@ -75,33 +77,37 @@ const PantryPage = () => {
     <PageTransition className="bg-kitchen-cream">
       <Header title="My Pantry" showBackButton={true} />
       
-      <main className="container mx-auto px-4 py-6 pb-20 max-w-7xl">
-        {/* Action Bar */}
-        <PantryPageHeader
-          selectedItems={selectedItems}
-          onAddNew={() => setShowAddDialog(true)}
-          onSendToShopping={handleSendToShopping}
-        />
+      <main className={`container mx-auto px-3 md:px-4 py-4 md:py-6 pb-20 ${isMobile ? 'max-w-full' : 'max-w-7xl'}`}>
+        {/* Action Bar - Mobile Optimized */}
+        <div className={`mb-4 md:mb-6 ${isMobile ? 'space-y-3' : ''}`}>
+          <PantryPageHeader
+            selectedItems={selectedItems}
+            onAddNew={() => setShowAddDialog(true)}
+            onSendToShopping={handleSendToShopping}
+          />
+        </div>
 
-        {/* Main Content */}
-        <PantryPageContent
-          items={items}
-          lists={lists}
-          selectedItems={selectedItems}
-          isLoading={isLoading}
-          onIncrement={incrementQuantity}
-          onDecrement={decrementQuantity}
-          onDelete={deleteItem}
-          onUpdate={updateItem}
-          onAddNew={() => setShowAddDialog(true)}
-          onAddToList={addItemToList}
-          onToggleSelectItem={handleToggleSelectItem}
-          onCreateList={createList}
-          onDeleteList={deleteList}
-          onRenameList={renameList}
-          onRemoveFromList={removeItemFromList}
-          onSendMissingToShopping={handleSendMissingToShopping}
-        />
+        {/* Main Content - Mobile Optimized */}
+        <div className={isMobile ? 'space-y-4' : ''}>
+          <PantryPageContent
+            items={items}
+            lists={lists}
+            selectedItems={selectedItems}
+            isLoading={isLoading}
+            onIncrement={incrementQuantity}
+            onDecrement={decrementQuantity}
+            onDelete={deleteItem}
+            onUpdate={updateItem}
+            onAddNew={() => setShowAddDialog(true)}
+            onAddToList={addItemToList}
+            onToggleSelectItem={handleToggleSelectItem}
+            onCreateList={createList}
+            onDeleteList={deleteList}
+            onRenameList={renameList}
+            onRemoveFromList={removeItemFromList}
+            onSendMissingToShopping={handleSendMissingToShopping}
+          />
+        </div>
       </main>
 
       <Footer />

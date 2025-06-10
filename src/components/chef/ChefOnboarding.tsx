@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ChefHat, MapPin, Calendar, CreditCard, Check } from 'lucide-react';
+import { ChefHat, MapPin, Calendar, CreditCard, Check, X } from 'lucide-react';
 
 interface ChefOnboardingStep {
   id: string;
@@ -69,6 +69,11 @@ const ChefOnboarding: React.FC<ChefOnboardingProps> = ({ onComplete, onSkip }) =
     onComplete();
   };
 
+  const handleSkip = () => {
+    localStorage.setItem('chefOnboardingComplete', 'true');
+    onSkip();
+  };
+
   const progress = ((currentStep + 1) / onboardingSteps.length) * 100;
   const currentStepData = onboardingSteps[currentStep];
   const IconComponent = currentStepData.icon;
@@ -86,11 +91,11 @@ const ChefOnboarding: React.FC<ChefOnboardingProps> = ({ onComplete, onSkip }) =
               <h2 className="text-xl font-bold">Chef Services</h2>
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={onSkip}
-                className="text-white/80 hover:text-white"
+                size="icon"
+                onClick={handleSkip}
+                className="text-white/80 hover:text-white hover:bg-white/10"
               >
-                Skip
+                <X size={18} />
               </Button>
             </div>
             <Progress value={progress} className="h-2 bg-white/20" />
@@ -136,6 +141,15 @@ const ChefOnboarding: React.FC<ChefOnboardingProps> = ({ onComplete, onSkip }) =
                     {currentStepData.action || (currentStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next')}
                   </Button>
                 </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSkip}
+                  className="mt-3 text-gray-500 hover:text-gray-700"
+                >
+                  Skip tutorial
+                </Button>
               </motion.div>
             </AnimatePresence>
           </CardContent>
