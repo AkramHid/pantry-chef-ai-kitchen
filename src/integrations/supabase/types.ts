@@ -11,37 +11,91 @@ export type Database = {
     Tables: {
       family_members: {
         Row: {
+          accessibility_needs: Json | null
+          age_group: string | null
           created_at: string
           email: string
+          emergency_contact: string | null
           id: string
+          last_activity: string | null
           member_user_id: string | null
           name: string
-          permissions: Json
+          permissions: Json | null
           role: string
           status: string
           user_id: string
         }
         Insert: {
+          accessibility_needs?: Json | null
+          age_group?: string | null
           created_at?: string
           email: string
+          emergency_contact?: string | null
           id?: string
+          last_activity?: string | null
           member_user_id?: string | null
           name: string
-          permissions?: Json
+          permissions?: Json | null
           role?: string
           status?: string
           user_id: string
         }
         Update: {
+          accessibility_needs?: Json | null
+          age_group?: string | null
           created_at?: string
           email?: string
+          emergency_contact?: string | null
           id?: string
+          last_activity?: string | null
           member_user_id?: string | null
           name?: string
-          permissions?: Json
+          permissions?: Json | null
           role?: string
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      family_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          expires_at: string | null
+          family_id: string
+          id: string
+          message_type: string
+          metadata: Json | null
+          priority: string | null
+          read_by: Json | null
+          sender_user_id: string
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          expires_at?: string | null
+          family_id: string
+          id?: string
+          message_type: string
+          metadata?: Json | null
+          priority?: string | null
+          read_by?: Json | null
+          sender_user_id: string
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          expires_at?: string | null
+          family_id?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          priority?: string | null
+          read_by?: Json | null
+          sender_user_id?: string
+          title?: string
         }
         Relationships: []
       }
@@ -65,36 +119,60 @@ export type Database = {
       }
       loyalty_cards: {
         Row: {
+          auto_scan_enabled: boolean | null
           barcode_data: string | null
           card_number: string
+          category: string | null
           created_at: string
+          expiry_date: string | null
           id: string
           is_active: boolean
+          last_used_at: string | null
           notes: string | null
+          points_balance: number | null
           qr_code_data: string | null
+          shared_with_family: boolean | null
+          store_logo_url: string | null
           store_name: string
+          usage_count: number | null
           user_id: string
         }
         Insert: {
+          auto_scan_enabled?: boolean | null
           barcode_data?: string | null
           card_number: string
+          category?: string | null
           created_at?: string
+          expiry_date?: string | null
           id?: string
           is_active?: boolean
+          last_used_at?: string | null
           notes?: string | null
+          points_balance?: number | null
           qr_code_data?: string | null
+          shared_with_family?: boolean | null
+          store_logo_url?: string | null
           store_name: string
+          usage_count?: number | null
           user_id: string
         }
         Update: {
+          auto_scan_enabled?: boolean | null
           barcode_data?: string | null
           card_number?: string
+          category?: string | null
           created_at?: string
+          expiry_date?: string | null
           id?: string
           is_active?: boolean
+          last_used_at?: string | null
           notes?: string | null
+          points_balance?: number | null
           qr_code_data?: string | null
+          shared_with_family?: boolean | null
+          store_logo_url?: string | null
           store_name?: string
+          usage_count?: number | null
           user_id?: string
         }
         Relationships: []
@@ -273,6 +351,78 @@ export type Database = {
         }
         Relationships: []
       }
+      settings_audit: {
+        Row: {
+          change_reason: string | null
+          changed_by_user_id: string
+          created_at: string | null
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          setting_category: string
+          setting_key: string
+          user_id: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by_user_id: string
+          created_at?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_category: string
+          setting_key: string
+          user_id: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by_user_id?: string
+          created_at?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_category?: string
+          setting_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      settings_templates: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string | null
+          description: string | null
+          id: string
+          is_system_template: boolean | null
+          name: string
+          target_accessibility_needs: string[] | null
+          target_age_group: string | null
+          template_data: Json
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          id?: string
+          is_system_template?: boolean | null
+          name: string
+          target_accessibility_needs?: string[] | null
+          target_age_group?: string | null
+          template_data: Json
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string | null
+          description?: string | null
+          id?: string
+          is_system_template?: boolean | null
+          name?: string
+          target_accessibility_needs?: string[] | null
+          target_age_group?: string | null
+          template_data?: Json
+        }
+        Relationships: []
+      }
       shopping_list: {
         Row: {
           category: string | null
@@ -354,51 +504,72 @@ export type Database = {
       user_preferences: {
         Row: {
           accessibility_mode: boolean
+          age_group: string | null
           auto_add_expiring: boolean
           created_at: string
           expiry_reminder_days: number
+          font_scale: number | null
           grocery_store_layout: string
+          high_contrast_mode: boolean | null
           id: string
           mobile_optimized_layout: boolean
           notification_email: boolean
           notification_push: boolean
           onboarding_completed: boolean
+          reduce_motion: boolean | null
+          simplified_ui: boolean | null
           theme: string
+          touch_target_size: string | null
           tutorial_mode: string
           updated_at: string
           user_id: string
+          voice_guidance: boolean | null
         }
         Insert: {
           accessibility_mode?: boolean
+          age_group?: string | null
           auto_add_expiring?: boolean
           created_at?: string
           expiry_reminder_days?: number
+          font_scale?: number | null
           grocery_store_layout?: string
+          high_contrast_mode?: boolean | null
           id?: string
           mobile_optimized_layout?: boolean
           notification_email?: boolean
           notification_push?: boolean
           onboarding_completed?: boolean
+          reduce_motion?: boolean | null
+          simplified_ui?: boolean | null
           theme?: string
+          touch_target_size?: string | null
           tutorial_mode?: string
           updated_at?: string
           user_id: string
+          voice_guidance?: boolean | null
         }
         Update: {
           accessibility_mode?: boolean
+          age_group?: string | null
           auto_add_expiring?: boolean
           created_at?: string
           expiry_reminder_days?: number
+          font_scale?: number | null
           grocery_store_layout?: string
+          high_contrast_mode?: boolean | null
           id?: string
           mobile_optimized_layout?: boolean
           notification_email?: boolean
           notification_push?: boolean
           onboarding_completed?: boolean
+          reduce_motion?: boolean | null
+          simplified_ui?: boolean | null
           theme?: string
+          touch_target_size?: string | null
           tutorial_mode?: string
           updated_at?: string
           user_id?: string
+          voice_guidance?: boolean | null
         }
         Relationships: []
       }
