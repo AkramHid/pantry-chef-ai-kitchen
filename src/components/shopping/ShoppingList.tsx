@@ -234,8 +234,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
       </div>
       
       <ListLayout
-        title="Shopping List"
-        subtitle="Organized by Store Layout"
+        title="Shopping List - Organized by Store Layout"
         viewMode={viewMode}
         onViewModeChange={!isMobile ? setViewMode : undefined}
         className="bg-gradient-to-br from-kitchen-cream to-white"

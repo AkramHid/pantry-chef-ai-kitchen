@@ -51,7 +51,7 @@ export const ChefCard: React.FC<ChefCardProps> = ({
         
         <CardContent className="p-4">
           <h3 className="text-xl font-bold text-kitchen-dark mb-2">{chef.name}</h3>
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{chef.bio}</p>
+          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{chef.description}</p>
           
           <div className="space-y-2 mb-4">
             <div className="flex items-center text-sm text-gray-600">

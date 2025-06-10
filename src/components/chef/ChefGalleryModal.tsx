@@ -125,7 +125,7 @@ export const ChefGalleryModal: React.FC<ChefGalleryModalProps> = ({
           <div className="mt-4 p-4 bg-kitchen-cream rounded-lg">
             <h3 className="font-bold text-kitchen-dark mb-2">{chef.name}</h3>
             <p className="text-sm text-gray-600 mb-2">{chef.styles.join(', ')} cuisine specialist</p>
-            <p className="text-sm text-gray-700">{chef.bio}</p>
+            <p className="text-sm text-gray-700">{chef.description}</p>
           </div>
         </div>
       </DialogContent>
