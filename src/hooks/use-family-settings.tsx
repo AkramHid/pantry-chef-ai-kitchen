@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -76,7 +77,8 @@ export function useFamilySettings() {
         ...member,
         role: member.role as 'admin' | 'parent' | 'caregiver' | 'member' | 'child',
         status: member.status as 'pending' | 'accepted' | 'declined',
-        age_group: member.age_group as 'child' | 'teen' | 'adult' | 'senior'
+        age_group: member.age_group as 'child' | 'teen' | 'adult' | 'senior',
+        permissions: member.permissions as FamilyMember['permissions']
       }));
       
       setMembers(typedMembers);
@@ -144,7 +146,8 @@ export function useFamilySettings() {
         ...data,
         role: data.role as 'admin' | 'parent' | 'caregiver' | 'member' | 'child',
         status: data.status as 'pending' | 'accepted' | 'declined',
-        age_group: data.age_group as 'child' | 'teen' | 'adult' | 'senior'
+        age_group: data.age_group as 'child' | 'teen' | 'adult' | 'senior',
+        permissions: data.permissions as FamilyMember['permissions']
       };
 
       setMembers(prev => [...prev, typedMember]);
@@ -327,3 +330,4 @@ export function useFamilySettings() {
     fetchFamilyMessages
   };
 }
+
