@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Chef } from '@/types/chef';
 import { ChefGalleryModal } from './ChefGalleryModal';
+import UberStyleBooking from './UberStyleBooking';
 
 interface ChefCardProps {
   chef: Chef;
@@ -20,12 +21,18 @@ export const ChefCard: React.FC<ChefCardProps> = ({
   onViewGallery 
 }) => {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   const handleViewGallery = () => {
     setIsGalleryOpen(true);
     if (onViewGallery) {
       onViewGallery(chef);
     }
+  };
+
+  const handleBookNow = () => {
+    setIsBookingOpen(true);
+    onBookNow(chef);
   };
 
   return (
@@ -94,7 +101,7 @@ export const ChefCard: React.FC<ChefCardProps> = ({
               Gallery
             </Button>
             <Button 
-              onClick={() => onBookNow(chef)}
+              onClick={handleBookNow}
               size="sm" 
               className="flex-1 bg-kitchen-green hover:bg-kitchen-green/90"
             >
@@ -108,6 +115,12 @@ export const ChefCard: React.FC<ChefCardProps> = ({
         chef={chef}
         open={isGalleryOpen}
         onOpenChange={setIsGalleryOpen}
+      />
+
+      <UberStyleBooking
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        selectedChef={chef}
       />
     </>
   );
