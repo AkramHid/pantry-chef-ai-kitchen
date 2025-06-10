@@ -70,7 +70,16 @@ export function useFamilySettings() {
         .order('created_at');
 
       if (error) throw error;
-      setMembers(data || []);
+      
+      // Type cast the data to match our interface
+      const typedMembers: FamilyMember[] = (data || []).map(member => ({
+        ...member,
+        role: member.role as 'admin' | 'parent' | 'caregiver' | 'member' | 'child',
+        status: member.status as 'pending' | 'accepted' | 'declined',
+        age_group: member.age_group as 'child' | 'teen' | 'adult' | 'senior'
+      }));
+      
+      setMembers(typedMembers);
     } catch (error) {
       console.error('Error fetching family members:', error);
       toast({
@@ -94,7 +103,15 @@ export function useFamilySettings() {
         .limit(50);
 
       if (error) throw error;
-      setMessages(data || []);
+      
+      // Type cast the data to match our interface
+      const typedMessages: FamilyMessage[] = (data || []).map(message => ({
+        ...message,
+        message_type: message.message_type as 'shopping_request' | 'recipe_share' | 'general' | 'emergency',
+        priority: message.priority as 'low' | 'normal' | 'high' | 'urgent'
+      }));
+      
+      setMessages(typedMessages);
     } catch (error) {
       console.error('Error fetching family messages:', error);
     }
@@ -122,14 +139,22 @@ export function useFamilySettings() {
 
       if (error) throw error;
 
-      setMembers(prev => [...prev, data]);
+      // Type cast the response data
+      const typedMember: FamilyMember = {
+        ...data,
+        role: data.role as 'admin' | 'parent' | 'caregiver' | 'member' | 'child',
+        status: data.status as 'pending' | 'accepted' | 'declined',
+        age_group: data.age_group as 'child' | 'teen' | 'adult' | 'senior'
+      };
+
+      setMembers(prev => [...prev, typedMember]);
       
       toast({
         title: 'Invitation sent',
         description: `Invitation sent to ${name}`,
       });
       
-      return data;
+      return typedMember;
     } catch (error) {
       console.error('Error inviting family member:', error);
       toast({
@@ -220,7 +245,14 @@ export function useFamilySettings() {
 
       if (error) throw error;
 
-      setMessages(prev => [data, ...prev]);
+      // Type cast the response data
+      const typedMessage: FamilyMessage = {
+        ...data,
+        message_type: data.message_type as 'shopping_request' | 'recipe_share' | 'general' | 'emergency',
+        priority: data.priority as 'low' | 'normal' | 'high' | 'urgent'
+      };
+
+      setMessages(prev => [typedMessage, ...prev]);
       
       toast({
         title: 'Message sent',

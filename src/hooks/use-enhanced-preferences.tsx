@@ -97,7 +97,14 @@ export function useEnhancedPreferences() {
         .order('name');
 
       if (error) throw error;
-      setTemplates(data || []);
+      
+      // Type cast the data to match our interface
+      const typedTemplates: SettingsTemplate[] = (data || []).map(template => ({
+        ...template,
+        target_age_group: template.target_age_group as 'child' | 'teen' | 'adult' | 'senior' | undefined
+      }));
+      
+      setTemplates(typedTemplates);
     } catch (error) {
       console.error('Error fetching templates:', error);
     }
